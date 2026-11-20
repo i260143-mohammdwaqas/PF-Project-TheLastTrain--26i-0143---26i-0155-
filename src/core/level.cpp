@@ -14,21 +14,21 @@ bool loadBuildingMap(const char* filename,
                   {
 
                         ifstream file(filename);
-                        
+
                         //file validation
                         if (!file.is_open()) 
                             return false;
-                        
-                        
+
+
                         int lines=0;
                         string line[100];
-                        
+
                         //read the line one at a time and store it in a string array
                         while(lines<100 && getline(file, line[lines]))
                         lines++;
 
-                        
-                        
+
+
 
                       //initializing horizentalCon
                       for(int i=0; i<NUM_FLOORS; i++)
@@ -44,86 +44,95 @@ bool loadBuildingMap(const char* filename,
                                 entityCounts[i][j]=0;
                             }   
                         }
-                         
+
 
                         int posR[ROOMS_PER_FLOOR];
+                        bool positionsfound=false;
 
                         //calculating Floor positions, helps in claculating room positions for entities
                         for(int i=0; i<lines; i++)
                         {
-                            bool found=false;
-                            for(int j=0, r=0; j<line[i].length(); j++)
+                            int r=0;
+                            for(int j=0 ; j<line[i].length(); j++)
                              {
+
                               if(line[i][j]=='F')
                               {
-                                 posR[r]=j;
-                                  r++;
-                                  found=true;
-                               }
- 
+                                if(r>=ROOMS_PER_FLOOR)
+                                 return false;
+
+                                posR[r]=j;
+                                r++;
+                              }
+
                             }
 
-                            if(found)
-                            break;
+                            if(r==ROOMS_PER_FLOOR)
+                            {
+                                positionsfound=true;
+                                break;
+                            }
                         }
-                         int f=-1;
+
+                         if(!positionsfound)
+                            return false;
+
+
+                         int f=-1, temp=-1;
 
                        //read linearray character by charater
                        for(int i=0; i<lines; i++)
                         {
-                            int entityCount=0, r=0, temp;
-                            bool found=false;
-                        
-                              
+                            int entityCount=0, r=0;
+
 
                             //calculate floor number, helps in storing room connections in the correct floor and room
                              if(line[i].find("F") != string::npos)
                                 {
                                 int pos=line[i].find("F");
                                  f = line[i][pos + 1] - '0'-1;
-                                 //storing the line number in temp
 
+                                 //storing the line number in temp
                                  temp=i;
                                   if(f<0 || f>=NUM_FLOORS)
                                     return false;    
-                                
 
-                           //k stores the room number
+                               //k stores the room number
 
-                           int k = 0;
+                               int k = 0;
 
-                        //storing room connections in the horizontalConn array
-                        for(int j = 0; j < line[i].length(); j++)
-                        {
-                            if(line[i][j] == 'W' || line[i][j] == 'D' ||
-                                line[i][j] == '#' || line[i][j] == 'L')
-                                {
-                                if(k >= ROOMS_PER_FLOOR - 1)
-                                 return false;
+                            //storing room connections in the horizontalConn array
+                            for(int j = 0; j < line[i].length(); j++)
+                            {
+                                if(line[i][j] == 'W' || line[i][j] == 'D' ||
+                                    line[i][j] == '#' || line[i][j] == 'L')
+                                    {
+                                    if(k >= ROOMS_PER_FLOOR - 1)
+                                     return false;
 
-                                 if(line[i][j] == 'L' && j + 1 < line[i].length()
-                                  && line[i][j + 1] == '1')
-                                 {
-                                    horizontalConn[f][k] = '1'; // Lift 1
-                                     j++;
-                                  }
 
-                                 else if(line[i][j] == 'L' && j + 1 < line[i].length()
-                                  && line[i][j + 1] == '2')
-                                 {
-                                    horizontalConn[f][k] = '2'; // Lift 2
-                                     j++;
-                                  } 
-                                else
-                                {                
-                                horizontalConn[f][k] = line[i][j];
-                                }
-                                
-                                k++;
-                                }
-                                temp=i;
+                                    
+                                     if(line[i][j] == 'L' && j + 1 < line[i].length()
+                                      && line[i][j + 1] == '1')
+                                     {
+                                       // horizontalConn[f][k] = '1'; // Lift 1
+                                         j++;
+                                      }
+
+                                     else if(line[i][j] == 'L' && j + 1 < line[i].length()
+                                      && line[i][j + 1] == '2')
+                                     {
+                                        // horizontalConn[f][k] = '2'; // Lift 2
+                                         j++;
+                                      } 
+                                    else
+                                    {                
+                                    horizontalConn[f][k] = line[i][j];
+                                    }
+
+                                    k++;
+                                    }
                              }
-                        
 
                              if(k != ROOMS_PER_FLOOR - 1)
                                    return false;
@@ -147,15 +156,13 @@ bool loadBuildingMap(const char* filename,
                                     roomEntities[f][r][entityCount-1]=line[i][j];
                                     entityCounts[f][r]=entityCount;
 
-
-                                    found=true;
                                 }
 
-                                 
+
                             }
                        }
-                 
-                    }
+
+
                     return true;
 				}
 
@@ -424,8 +431,18 @@ bool validateStartingRoom(int startFloor, int startRoom,
                             if(startFloor<1 || startFloor>NUM_FLOORS || startRoom<1 || startRoom>ROOMS_PER_FLOOR)
                             return false;
 
-                            //at room 1 in all floors, there is vertical connection through stairs
-                           //vertical conditions, handled based on assumptions!   
+                             
+                            //vertical conditions, handled based on assumptions!
+                           //lifts not handled ?
+
+
+                           
+
+
+
+
+
+                            //at room 1 in all floors, there is vertical connection through stairs  
                             if(startRoom==1)
                                 return true;
 
