@@ -7,6 +7,9 @@ using namespace std;
 
 // Modular implementation using primitive arrays for map parsing and verification
 
+//VERTTICAL CONNECTIONS ARE NOT HANDLED?
+
+
 bool loadBuildingMap(const char* filename,
                      char horizontalConn[NUM_FLOORS][ROOMS_PER_FLOOR - 1],
                      char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
