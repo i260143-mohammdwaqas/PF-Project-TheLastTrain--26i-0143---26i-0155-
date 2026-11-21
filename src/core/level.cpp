@@ -10,6 +10,7 @@ using namespace std;
 //VERTTICAL CONNECTIONS ARE NOT HANDLED?
 
 
+
 bool loadBuildingMap(const char* filename,
                      char horizontalConn[NUM_FLOORS][ROOMS_PER_FLOOR - 1],
                      char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
@@ -114,18 +115,17 @@ bool loadBuildingMap(const char* filename,
                                      return false;
 
 
-                                    
-                                     if(line[i][j] == 'L' && j + 1 < line[i].length()
+                                    //j++ ensures that next charater is skipped if it is L1 or L2
+                                     
+                                    if(line[i][j] == 'L' && j + 1 < line[i].length()
                                       && line[i][j + 1] == '1')
                                      {
-                                       // horizontalConn[f][k] = '1'; // Lift 1
                                          j++;
                                       }
 
                                      else if(line[i][j] == 'L' && j + 1 < line[i].length()
                                       && line[i][j + 1] == '2')
                                      {
-                                        // horizontalConn[f][k] = '2'; // Lift 2
                                          j++;
                                       } 
                                     else
@@ -164,7 +164,7 @@ bool loadBuildingMap(const char* filename,
 
                             }
                        }
-
+                    }
 
                     return true;
 				}
@@ -435,14 +435,15 @@ bool validateStartingRoom(int startFloor, int startRoom,
                             return false;
 
                              
-                            //vertical conditions, handled based on assumptions!
-                           //lifts not handled ?
+                            //vertical conditions, handled manualy?
 
+                            //lift 1 connects floor 1 and floor 2  and room 2 and room 3;
+                            if((startFloor==1 || startFloor==2) &&(startRoom==2 || startRoom==3))
+                                return true;
 
-                           
-
-
-
+                            //lift 2 connects floor 2, floor 4 and floor 5 and room 4 
+                           if((startFloor==2 ||startFloor==4 || startFloor==5) && startRoom==4)
+                                return true;
 
 
                             //at room 1 in all floors, there is vertical connection through stairs  

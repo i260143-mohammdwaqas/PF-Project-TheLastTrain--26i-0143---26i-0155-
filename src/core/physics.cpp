@@ -30,32 +30,63 @@ bool isDirectlyConnected(int fromF, int fromR, int toF, int toR,
                                 else if(toR==fromR-1)
                                 outConnType=horizontalConn[fromF-1][toR-1];
                                 
-                                //if rooms are not adjacent return false
+                                //if rooms are not adjacent, while being on the same floor return false 
                                 else 
                                 return false;
 
                             }
 
-                            if(outConnType==' ' || outConnType=='#')
-                                 return false;
+        
+
+                          
                             
                             //check wether both rooms are direcly connnected vertically throuugh stairs
-                          
-                           
-                            //lifts?
+                            else if((fromF==1 || fromF==2) && (toF==1 || toF==2) && fromR==1 && toR==1)
+                            {
+                                outConnType='S';
+                            }
+
+                            else if((fromF==2 || fromF==3) && (toF==2 || toF==3) && fromR==1 && toR==1)
+                            {
+                                outConnType='S';
+                            }
+
+                            else if((fromF==4 || fromF==5) && (toF==4 || toF==5) && fromR==1 && toR==1)
+                            {
+                                outConnType='S';
+                            }
+
+                            //lifts
+
+                            //lift 1 connects floors 1, 2 and room 3, room 2
+                            else if((fromF==1 || fromF==2) && (toF==1 || toF==2) && fromR==toR && (fromR==2 || fromR==3))
+                            {
+                                outConnType='1';
+                            }
+
+                            //lift 2 connects floors 2 ,4 and 5 and room 4;
+                            else if((fromF==2 || fromF==4) && (toF==2 || toF==4) && fromR==4 && toR==4)
+                            {
+                                outConnType='2';
+                            }
+
+                            else if((fromF==2 || fromF==5) && (toF==2 || toF==5) && fromR==4 && toR==4)
+                            {
+                                outConnType='2';
+                            }
+
+                            else if((fromF==4 || fromF==5) && (toF==4 || toF==5) && fromR==4 && toR==4)
+                            {
+                                outConnType='2';
+                            }
 
 
+                            if(outConnType==' ' || outConnType=='#')
+                                 return false;
 
-
-
-
-
-                            //if both the rooms are not directly connected return false 
                             return true;
 
-    
-
-                            }
+                         }
                              
 
 
