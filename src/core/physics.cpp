@@ -1,6 +1,7 @@
+#include<iostream>
 #include "physics.h"
 #include "util.h"
-
+using namespace std;
 // Movement validation and resource adjustments without structures
 bool isDirectlyConnected(int fromF, int fromR, int toF, int toR,
                          const char horizontalConn[NUM_FLOORS][ROOMS_PER_FLOOR - 1],
@@ -188,11 +189,13 @@ bool addItem(char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount, char i
 {
     //if the inventories are alredy full or out of bound return false
     if(inventoryCount>=MAX_INVENTORY_CAPACITY)
-    return false;
+    {cout<<"Inventory is Full, Collection failed!"<<endl;
+    return false;}
 
     //if item alredy exists, return 0;
     if(hasItem(inventory, inventoryCount, itemSymbol))
-    return false;
+    {cout<<"Item is alredy in the inventory, collection failed!"<<endl;
+    return false;}
 
     //add the inventory symbol
     inventory[inventoryCount]=itemSymbol;
@@ -215,7 +218,7 @@ bool removeItem(char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount, cha
 
     }
 
-    //if the inventory does not contain the item, retur false;
+    //if the inventory does not contain the item, return false;
     if(index==-1)
     return false;
 

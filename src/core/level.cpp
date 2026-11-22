@@ -156,6 +156,7 @@ bool loadBuildingMap(const char* filename,
                                        return false;
 
                                     entityCount++;
+                                    //room entities srores items present in the particular room and  entityCounts stores the amount of them in a room
                                     roomEntities[f][r][entityCount-1]=line[i][j];
                                     entityCounts[f][r]=entityCount;
 

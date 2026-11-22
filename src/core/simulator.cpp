@@ -1,6 +1,6 @@
 #include <iostream>
-#include "simulator.h"
 #include "physics.h"
+#include "simulator.h"
 #include "switches.h"
 #include "logger.h"
 #include "viewer_iface.h"
@@ -223,7 +223,7 @@ bool handleMoveCommand(int targetFloor, int targetRoom,
                            }
 
 
-                        //check wether there are not enough resources for the movement
+                        //check wether there are Resources not enough, collection for the movement
                         int timeDelta=0, energyDelta=0;
 
                         if(ConnType=='D' || ConnType=='S')
@@ -244,10 +244,10 @@ bool handleMoveCommand(int targetFloor, int targetRoom,
                             timeDelta=-3;
                         }
                         
-                        //if there is not enough resources, movement is failed 
+                        //if there is Resources not enough, collection, movement is failed 
                         if(energy+energyDelta<0 || time+timeDelta<0)
                         {
-                            cout<<"Not enough Resources, Movement Failed!"<<endl;
+                            cout<<"Resources not enough, Movement Failed!"<<endl;
                             return false;
                         }
 
@@ -275,16 +275,75 @@ bool handleMoveCommand(int targetFloor, int targetRoom,
 
 
 
-
+//objectives and score parameters left unattended for now;
 bool handleInspectCommand(int currentFloor, int currentRoom,
                           int& energy, int& time,
                           const char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
                           int entityCount,
                           bool objectives[NUM_OBJECTIVES], int& score)
-                          {
+                          { 
+                            int energyDelta=-1, timeDelta=-1;
 
-                          }
+                            //check if currentFloor and currentRoom are valid
+                            if(currentRoom<1 || currentRoom>ROOMS_PER_FLOOR || currentFloor<1 || currentFloor>NUM_FLOORS)
+                            return 0;
+                            
+                            //check if the player has enough time nd energy for inspection command, if not return false
+                            if(energy+energyDelta<0 || time+timeDelta<0)
+                            {
+                                cout<<"Resources not enough, Inspection Failed!"<<endl;
+                                return false;
+                            }
+ 
+                             int deltaScore=0;
 
+                            //print room entites
+                            if(entityCount==0)
+                            cout<<"current Room does not contain any items"<<endl;
+                            
+                           
+
+                            else
+                            {
+                            cout<<"Romm entities: ";
+                            for(int i=0; i<entityCount; i++)
+                            {
+                            cout<<getEntityName(roomEntities[currentFloor-1][currentRoom-1][i])<<" ";
+
+                            //clues are not exposed on inspection
+                            //update the score on inspection of clues, if they are present in the room
+
+                            if(roomEntities[currentFloor-1][currentRoom-1][i]=='4' && !objectives[OBJ_CLUE_4])
+                            {
+                                objectives[OBJ_CLUE_4]=true;
+                                deltaScore=10;
+                            }
+
+                            if(roomEntities[currentFloor-1][currentRoom-1][i]=='2'  && !objectives[OBJ_CLUE_2])
+                            {
+                                objectives[OBJ_CLUE_2]=true;
+                                deltaScore=10;
+                            }
+
+                            if(roomEntities[currentFloor-1][currentRoom-1][i]=='7' && !objectives[OBJ_CLUE_7])
+                            {
+                                objectives[OBJ_CLUE_7]=true;
+                                deltaScore=10;
+                            }
+                        }
+                    }
+                             
+                            //call the function to update the score, for clues;
+                            applyScoreDelta(score, deltaScore);
+                          
+                            //update resources, used for inspection
+                            applyResourceDelta(energy, time, energyDelta, timeDelta);
+                            
+
+                            return true;
+
+                }
+            
 
 
 
@@ -295,7 +354,109 @@ bool handleCollectCommand(char itemSymbol, int currentFloor, int currentRoom,
                           int& entityCount,
                           char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount,
                           bool objectives[NUM_OBJECTIVES])
-                          {}
+                          {
+
+                            if(currentFloor<1 || currentFloor>NUM_FLOORS || currentRoom<1 || currentRoom>ROOMS_PER_FLOOR)
+                            return false;
+
+
+                            //if itemSymbol is clue reject collection
+                            if(itemSymbol=='4' || itemSymbol=='2' || itemSymbol=='7')
+                            {
+                                cout<<"Clue items cannot be collected!"<<endl;
+                                return false;
+                            }
+
+
+                            int energyDelta=-1, timeDelta=-1;
+
+                            //speacial energy and time restorartion conditions for certain symbols
+                            //these items have immediate effects on collection, they dont get stored in the inventory
+                            if(itemSymbol==ENT_ENERGY_PACK)
+                            energyDelta=25;
+
+                            if(itemSymbol==ENT_EMERGENCY_TOOLKIT)
+                            energyDelta=15;
+
+                            if(itemSymbol==ENT_OBSERVATION_TOKEN)
+                            timeDelta=15;
+                        
+
+                            //if energy and time are not enough to carry out the command, return false;
+                            if(energy+energyDelta<0 || time+timeDelta<0)
+                            {
+                                cout<<"Resources not enough, item collection Failed!"<<endl;
+                                return false;
+                            }
+
+                              
+                            //if item to be collected is not in the room, return false;
+                            bool found=false;
+                            int itemIndex=-1;
+                           for(int i=0; i<entityCount; i++)
+                            {
+                                if(roomEntities[currentFloor-1][currentRoom-1][i]==itemSymbol)
+                                {
+                                    found=true;
+                                    itemIndex=i;
+                                    break;
+                                }
+                            }
+                           
+                            if(!found)
+                            {
+                                cout<<"Item in not present, Collection failed"<<endl;
+                                return false;
+                            }
+                             
+
+                            
+                            //if the item is not one of the three, then its added to the inventory
+                           if(!(itemSymbol==ENT_ENERGY_PACK || itemSymbol==ENT_EMERGENCY_TOOLKIT || itemSymbol==ENT_OBSERVATION_TOKEN)) 
+                           {
+                            //call addItem function, first check wether fucntion runs succesfully, if not retiurn false
+                            if(!addItem(inventory, inventoryCount, itemSymbol))
+                            return false;
+                           }
+                           
+                           
+                            //remove the item from the entity 
+                            for(int i=itemIndex; i<entityCount-1; i++)
+                            {
+                                roomEntities[currentFloor-1][currentRoom-1][i]= roomEntities[currentFloor-1][currentRoom-1][i+1];
+                            }
+                           
+                            //adjust the entityCount
+                            entityCount--;
+
+
+                            //update score;
+                            int deltaScore=0;
+                            if(itemSymbol=='<' )
+                            deltaScore=10;
+                          
+                            //call the function to update the score;
+                            applyScoreDelta(score, deltaScore);
+
+                            //update resources
+                            applyResourceDelta(energy, time, energyDelta, timeDelta);
+
+                            //update objective which can become true, when items are collected
+                            if(itemSymbol==ENT_MASTER_KEY)
+                                objectives[OBJ_MASTER_KEY] = true;
+
+                            if(itemSymbol==ENT_FUSE)
+                                objectives[OBJ_FUSE_COLLECTED] = true;
+
+                            if(itemSymbol==ENT_LIFT_PASS)
+                                objectives[OBJ_LIFT_PASS] = true;
+
+                            if(itemSymbol==ENT_CAT_CARRIER)
+                                objectives[OBJ_CAT_CARRIER] = true;
+                            
+                             
+                            return true;                                    
+                          }
 
 
 
