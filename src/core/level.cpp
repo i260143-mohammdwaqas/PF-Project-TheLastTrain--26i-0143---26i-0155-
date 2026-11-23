@@ -87,6 +87,7 @@ bool loadBuildingMap(const char* filename,
                        //read linearray character by charater
                        for(int i=0; i<lines; i++)
                         {
+                            //r stores room index
                             int entityCount=0, r=0;
 
 
@@ -94,6 +95,7 @@ bool loadBuildingMap(const char* filename,
                              if(line[i].find("F") != string::npos)
                                 {
                                 int pos=line[i].find("F");
+                                //subtracting 0 char to get integer;
                                  f = line[i][pos + 1] - '0'-1;
 
                                  //storing the line number in temp
@@ -145,6 +147,7 @@ bool loadBuildingMap(const char* filename,
                          {
                             for(int j=0; j<line[i].length(); j++)
                             {
+                                //check if end of the room has come
                              if(r<ROOMS_PER_FLOOR - 1 && posR[r+1]==j)
                                    {
                                     entityCount=0;

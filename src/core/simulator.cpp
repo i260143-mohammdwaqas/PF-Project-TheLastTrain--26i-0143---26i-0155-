@@ -9,6 +9,9 @@
 using namespace std;
 
 
+//handleUnlockCabinet? (not sure about wether some items should be remved, once used), to be handle latter?
+//changed the parameters of checkEndConditions??
+
 // Modular simulation loop using primitive variables
 void runSimulation(int& playerFloor, int& playerRoom,
                    int& energy, int& time, int& score,
@@ -23,7 +26,7 @@ void runSimulation(int& playerFloor, int& playerRoom,
                     int targetRoom, targetFloor;
                    
                     // set gamerunning true at the start of the game loop
-                    bool gameRunning = true;
+                    bool gameRunning=true;
 
                     //main loop
                     while(gameRunning)
@@ -132,6 +135,13 @@ void runSimulation(int& playerFloor, int& playerRoom,
                             //handle unlock cabinet coommand
                             case 'X':
                             {
+                            //check if the cabinet is alredy unlocked
+                            if(objectives[OBJ_CABINET_UNLOCKED])
+                            {
+                                cout<<"Cabinet is alredy unlocked!"<<endl;
+                                break;
+                            }
+
                             //user enters the code to unlock the cabinet
                             string code;
                             cout<<"Enter the 3 digit code to unlock the cabinet: ";
@@ -162,7 +172,7 @@ void runSimulation(int& playerFloor, int& playerRoom,
                             cout<<"M: Move to a different room (requires floor and room number)"<<endl;
                             cout<<"I: Inspect the current room for items and entities"<<endl;
                             cout<<"C: Collect an item from the current room"<<endl;
-                            cout<<"U: Use an item from your inventory"<<endl;
+                            cout<<"U: Use an item from Playerr inventory"<<endl;
                             cout<<"X: Unlock a cabinet using a code"<<endl;
                             cout<<"H: Show this help menu"<<endl;
                             cout<<"Q: Quit the game"<<endl;
@@ -175,7 +185,7 @@ void runSimulation(int& playerFloor, int& playerRoom,
 
                         }
 
-                        if(command!='Q' && !checkEndConditions(energy, time, objectives))
+                        if(command!='Q' && checkEndConditions(energy, time, score, objectives))
                             gameRunning=false;
 
                         }
@@ -208,7 +218,7 @@ bool handleMoveCommand(int targetFloor, int targetRoom,
 
                         if(targetFloor==currentFloor && targetRoom==currentRoom)
                         {
-                            cout<<"You are already in the target room!"<<endl;
+                            cout<<"Player are already in the target room!"<<endl;
                             return false;
                         }
 
@@ -228,20 +238,20 @@ bool handleMoveCommand(int targetFloor, int targetRoom,
 
                         if(ConnType=='D' || ConnType=='S')
                         {
-                            energyDelta=-2;
-                            timeDelta=-1;
+                            energyDelta=COST_MOVE_ORDINARY_ENERGY;
+                            timeDelta=COST_MOVE_ORDINARY_TIME;
                         }
 
                         else if(ConnType=='W')
                         {
-                            energyDelta=-3;
-                            timeDelta=-2;
+                            energyDelta=COST_MOVE_WINDOW_ENERGY;
+                            timeDelta=COST_MOVE_WINDOW_TIME;
                         }
 
                         else if(ConnType=='1' || ConnType=='2')
                         {
-                            energyDelta=-4;
-                            timeDelta=-3;
+                            energyDelta=COST_MOVE_LIFT_ENERGY;
+                            timeDelta=COST_MOVE_LIFT_TIME;
                         }
                         
                         //if there is Resources not enough, collection, movement is failed 
@@ -282,11 +292,11 @@ bool handleInspectCommand(int currentFloor, int currentRoom,
                           int entityCount,
                           bool objectives[NUM_OBJECTIVES], int& score)
                           { 
-                            int energyDelta=-1, timeDelta=-1;
+                            int energyDelta=COST_INSPECT_ENERGY, timeDelta=COST_INSPECT_TIME;
 
                             //check if currentFloor and currentRoom are valid
                             if(currentRoom<1 || currentRoom>ROOMS_PER_FLOOR || currentFloor<1 || currentFloor>NUM_FLOORS)
-                            return 0;
+                            return false;
                             
                             //check if the player has enough time nd energy for inspection command, if not return false
                             if(energy+energyDelta<0 || time+timeDelta<0)
@@ -310,25 +320,25 @@ bool handleInspectCommand(int currentFloor, int currentRoom,
                             {
                             cout<<getEntityName(roomEntities[currentFloor-1][currentRoom-1][i])<<" ";
 
-                            //clues are not exposed on inspection
+                            //clues are exposed on inspection
                             //update the score on inspection of clues, if they are present in the room
 
                             if(roomEntities[currentFloor-1][currentRoom-1][i]=='4' && !objectives[OBJ_CLUE_4])
                             {
                                 objectives[OBJ_CLUE_4]=true;
-                                deltaScore=10;
+                                deltaScore=SCORE_CLUE_FOUND;
                             }
 
                             if(roomEntities[currentFloor-1][currentRoom-1][i]=='2'  && !objectives[OBJ_CLUE_2])
                             {
                                 objectives[OBJ_CLUE_2]=true;
-                                deltaScore=10;
+                                deltaScore=SCORE_CLUE_FOUND;
                             }
 
                             if(roomEntities[currentFloor-1][currentRoom-1][i]=='7' && !objectives[OBJ_CLUE_7])
                             {
                                 objectives[OBJ_CLUE_7]=true;
-                                deltaScore=10;
+                                deltaScore=SCORE_CLUE_FOUND;
                             }
                         }
                     }
@@ -361,25 +371,35 @@ bool handleCollectCommand(char itemSymbol, int currentFloor, int currentRoom,
 
 
                             //if itemSymbol is clue reject collection
-                            if(itemSymbol=='4' || itemSymbol=='2' || itemSymbol=='7')
+                            if(itemSymbol==ENT_CLUE_4 || itemSymbol==ENT_CLUE_2 || itemSymbol==ENT_CLUE_7)
                             {
                                 cout<<"Clue items cannot be collected!"<<endl;
                                 return false;
                             }
 
 
-                            int energyDelta=-1, timeDelta=-1;
+                            int energyDelta=COST_ITEM_PICKUP_ENERGY, timeDelta=COST_ITEM_PICKUP_TIME;
 
                             //speacial energy and time restorartion conditions for certain symbols
                             //these items have immediate effects on collection, they dont get stored in the inventory
                             if(itemSymbol==ENT_ENERGY_PACK)
-                            energyDelta=25;
+                            {
+                                energyDelta=BONUS_ENERGY_PACK;
+                                timeDelta=0;
+                            }
+
 
                             if(itemSymbol==ENT_EMERGENCY_TOOLKIT)
-                            energyDelta=15;
+                            {
+                                energyDelta=BONUS_EMERGENCY_TOOLKIT;
+                                timeDelta=0;
+                            }
 
                             if(itemSymbol==ENT_OBSERVATION_TOKEN)
-                            timeDelta=15;
+                            {
+                                timeDelta=BONUS_OBSERVATION_TOKEN;
+                                energyDelta=0;
+                            }
                         
 
                             //if energy and time are not enough to carry out the command, return false;
@@ -409,6 +429,11 @@ bool handleCollectCommand(char itemSymbol, int currentFloor, int currentRoom,
                                 return false;
                             }
                              
+                            if(itemSymbol==ENT_CABINET_TRAIN_KEY && !objectives[OBJ_CABINET_UNLOCKED])
+                            {
+                               cout<<"cabinet is Locked!"<<endl;
+                               return false;
+                            }
 
                             
                             //if the item is not one of the three, then its added to the inventory
@@ -432,9 +457,17 @@ bool handleCollectCommand(char itemSymbol, int currentFloor, int currentRoom,
 
                             //update score;
                             int deltaScore=0;
-                            if(itemSymbol=='<' )
-                            deltaScore=10;
-                          
+
+                            if(itemSymbol==ENT_MASTER_KEY )
+                            deltaScore=SCORE_KEY_COLLECT;
+
+                            if(itemSymbol==ENT_CABINET_TRAIN_KEY)
+                            deltaScore=SCORE_TRAIN_KEY;
+                            
+                            if(itemSymbol==ENT_LIFT_PASS)
+                            deltaScore=SCORE_LIFT_PASS;
+
+                           
                             //call the function to update the score;
                             applyScoreDelta(score, deltaScore);
 
@@ -443,16 +476,25 @@ bool handleCollectCommand(char itemSymbol, int currentFloor, int currentRoom,
 
                             //update objective which can become true, when items are collected
                             if(itemSymbol==ENT_MASTER_KEY)
-                                objectives[OBJ_MASTER_KEY] = true;
+                                objectives[OBJ_MASTER_KEY]=true;
 
                             if(itemSymbol==ENT_FUSE)
-                                objectives[OBJ_FUSE_COLLECTED] = true;
+                                objectives[OBJ_FUSE_COLLECTED]=true;
 
                             if(itemSymbol==ENT_LIFT_PASS)
-                                objectives[OBJ_LIFT_PASS] = true;
+                               {
+                                objectives[OBJ_LIFT_PASS]=true;
+                                //if fuse is already installed, then lift2 becomes operational automatically
+                                if(objectives[OBJ_FUSE_INSTALLED])
+                                objectives[OBJ_LIFT2_ACTIVE]=true;
+                               }
+
+                            if(itemSymbol==ENT_CABINET_TRAIN_KEY)
+                               objectives[OBJ_TRAIN_KEY]=true;
+
 
                             if(itemSymbol==ENT_CAT_CARRIER)
-                                objectives[OBJ_CAT_CARRIER] = true;
+                                objectives[OBJ_CAT_CARRIER]=true;
                             
                              
                             return true;                                    
@@ -466,7 +508,169 @@ bool handleUseCommand(char itemSymbol, int currentFloor, int currentRoom,
                       int& energy, int& time, int& score,
                       char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount,
                       bool objectives[NUM_OBJECTIVES])
-                      {}
+                      {
+                        //validate the room and floor
+                        if(currentFloor<1 || currentFloor> NUM_FLOORS || currentRoom<1 || currentRoom> ROOMS_PER_FLOOR)
+                        return false;
+
+                        //check if item can be used here
+                        if(itemSymbol!=ENT_FUSE && itemSymbol!=ENT_MEDICAL_KIT && itemSymbol!=ENT_CAT_CARRIER && itemSymbol!=ENT_CABINET_TRAIN_KEY)
+                        {
+                            cout<<"Item cannot be used here!"<<endl;
+                            return false;
+                        }
+
+                        //check wether the item exists in the inventory, 
+                        bool found=false;
+                        for(int i=0; i<inventoryCount; i++)
+                        {
+                            if(inventory[i]==itemSymbol)
+                            {
+                                found=true;
+                                break;
+                            }
+
+                        }
+
+
+
+                        //if not return false
+                        if(!found)
+                        {
+                            cout<<"Player does not have the item!"<<endl;
+                            return false;
+                        }
+
+                        //declare/initialize the delta variables
+                        int deltaEnergy=COST_ITEM_USE_ENERGY, deltaTime=COST_ITEM_USE_TIME, deltaScore=0;
+                        
+                        //check wether user has enough resources to use the item;
+                        if(energy+deltaEnergy<0 || time+deltaTime<0)
+                        {
+                            cout<<"Player does not have enough resources!"<<endl;
+                            return false;
+                        }
+
+                        //if item is fuse
+                        if(itemSymbol==ENT_FUSE)
+                        {
+                            //check if plyer is at required location
+                            if(currentFloor!=3 || currentRoom!=4)
+                            {
+                                cout<<"Player must be at Room 4 in 3rd Floor!"<<endl;
+                                return false;
+                            }
+
+                            //check if fuse is alredy isntalled, if yes then return false
+                            if(objectives[OBJ_FUSE_INSTALLED])
+                            {
+                                cout<<"Fuse is alreday installed!"<<endl;
+                                return false;
+                            }
+
+                              //remove the item, if its fuse, from the inventory after succesful use
+                        
+                             if(!removeItem(inventory, inventoryCount, itemSymbol))
+                                return false;
+            
+
+                            objectives[OBJ_FUSE_INSTALLED]=true;
+
+                            //check if OBJ_LIFT_PASS is true, if yes then OBJ_LIFT2_ACTIVE become true automatically
+                            if(objectives[OBJ_LIFT_PASS])
+                            objectives[OBJ_LIFT2_ACTIVE]=true;
+
+                            //update the deltaScore
+                            deltaScore=SCORE_INSTALL_FUSE;
+                        }
+
+
+                        //when item symbol is medical ki
+                        if(itemSymbol==ENT_MEDICAL_KIT)
+                        {
+                            //check if the player is at required location
+                            if(currentFloor!=4 || currentRoom!=1)
+                            {
+                                cout<<"Player must be at Room 1 in 4th Floor!"<<endl;
+                                return false;
+                            }
+
+                            //check if the passenger has alredy been rescued
+                            if(objectives[OBJ_PASSENGER_RESCUED])
+                            {
+                                cout<<"Passenger has already been rescued!"<<endl;
+                                return false;
+                            }
+
+                            //set the OBJ_PASSENGER_RESCUED true
+
+                            objectives[OBJ_PASSENGER_RESCUED]=true;
+
+                            //update the delta score value
+                            deltaScore=SCORE_RESCUE_PASSENGER;
+                        }
+
+                        
+                        
+                        //if item symbol is cat carrier;
+                        if(itemSymbol==ENT_CAT_CARRIER)
+                        {
+                            //check wether player is at required location
+                            if(currentFloor!=3 || currentRoom!=3)
+                            {
+                                cout<<"Player must be at Room 3 in 3rd Floor!"<<endl;
+                                return false;
+                            }
+
+                            //check if objectives[OBJ_CAT_SECURED] is already true
+                            if(objectives[OBJ_CAT_SECURED])
+                            {
+                                cout<<"Cat has alredy been rescued!"<<endl;
+                                return false;
+                            }
+
+                            //set objectives[OBJ_CAT_SECURED]=true;
+                            objectives[OBJ_CAT_SECURED]=true;
+
+                            //update the delta score vlue
+                            deltaScore=SCORE_SECURE_CAT;
+                        }
+
+
+                        //if item symbol is cabinet train key
+                        if(itemSymbol==ENT_CABINET_TRAIN_KEY)
+                        {
+                            //check if player is at required location
+                            if(currentFloor!=5 || currentRoom!=2)
+                            {
+                                cout<<"Player must be at Room 2 in 5th Floor!"<<endl;
+                                return false;
+                            }
+
+                            //check if objectives[OBJ_TRAIN_PREPARED] is already true
+                            if(objectives[OBJ_TRAIN_PREPARED])
+                            {
+                                cout<<"Train has alredy been prepared!"<<endl;
+                                return false;
+                            }
+
+                            //set objectives[OBJ_TRAIN_PREPARED]=true;
+                            objectives[OBJ_TRAIN_PREPARED]=true;
+
+
+                            //update the delta score vlue
+                            deltaScore=SCORE_PREPARE_TRAIN;
+                        }
+                         
+
+
+                            //update the score and resources
+                            applyScoreDelta(score, deltaScore);
+                            applyResourceDelta(energy, time, deltaEnergy, deltaTime);
+
+                            return true;
+
+                      }
 
 
 
@@ -476,14 +680,74 @@ bool handleUnlockCabinetCommand(const char* code, int currentFloor, int currentR
                                 bool objectives[NUM_OBJECTIVES], int& score,
                                 char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
                                 int& entityCount)
-                                {}
+                                {
+                                    //check if the player is at required location
+                                    if(currentFloor!=5 || currentRoom!=1)
+                                    {
+                                        cout<<"Player must be at Room 1, in 5th floor!"<<endl;
+                                        return false;
+                                    }
+                                     
+                                    //check if all the clues have been collected
+                                    if(!objectives[OBJ_CLUE_2] || !objectives[OBJ_CLUE_4] || !objectives[OBJ_CLUE_7])
+                                    {
+                                        cout<<"Clues missing!"<<endl;
+                                        return false;
+                                    }
+
+                                    //check if the Entered code is correct
+                                    if(code[0]!='4' || code[1]!='2' || code[2]!='7')
+                                    {
+                                        cout<<"incorrect code!"<<endl;
+                                        return false;
+                                    }
+                                      
+                                     //set the objective true
+                                     objectives[OBJ_CABINET_UNLOCKED]=true;
+
+                                     //update score
+                                     int deltaScore=SCORE_CABINET_UNLOCK;
+                                     applyScoreDelta(score, deltaScore);
+
+                                     return true;
+
+                                }
 
 
 
 
 
-bool checkEndConditions(int energy, int time, const bool objectives[NUM_OBJECTIVES])
+bool checkEndConditions(int energy, int time, int &score, bool objectives[NUM_OBJECTIVES])
 {
+    int deltascore=0;
+    
+    //check wining cnditions
+    if(objectives[OBJ_PASSENGER_RESCUED] && objectives[OBJ_CAT_SECURED] && objectives[OBJ_TRAIN_PREPARED])
+    {
+        cout<<"Game Won"<<endl;
+
+      
+        if(!objectives[OBJ_MISSION_WON])
+        {
+         objectives[OBJ_MISSION_WON]=true;
+
+         //update score
+         deltascore=SCORE_MISSION_VICTORY;
+         applyScoreDelta(score, deltascore);
+        }
+
+        return true;
+    }
+
+//check loosing conditions
     if(energy==0 || time==0)
+    {
+        cout<<"Game lost!"<<endl;
+
+        objectives[OBJ_MISSION_FAILED]=true;
+        return true;
+    }
+
+
     return false;
 }

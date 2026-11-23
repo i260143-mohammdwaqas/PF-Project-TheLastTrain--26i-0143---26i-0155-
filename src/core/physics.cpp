@@ -2,6 +2,10 @@
 #include "physics.h"
 #include "util.h"
 using namespace std;
+
+//canTraverse? emergencyTrip decrement, to be handle latter?
+
+
 // Movement validation and resource adjustments without structures
 bool isDirectlyConnected(int fromF, int fromR, int toF, int toR,
                          const char horizontalConn[NUM_FLOORS][ROOMS_PER_FLOOR - 1],
@@ -110,8 +114,10 @@ bool canTraverse(int targetFloor, int targetRoom, char connType,
 
                         //if no master key, return false, because bw adjacent rooms there is no other way
                         else 
+                        {
+                        cout<<"Master Key is required to traverse the locked door!"<<endl;
                         return false;
-
+                        }
                     }
 
                     //if connType is l2 check if lift is operational, if yes then return true;
@@ -220,7 +226,9 @@ bool removeItem(char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount, cha
 
     //if the inventory does not contain the item, return false;
     if(index==-1)
-    return false;
+    {
+        cout<<"Item is not present in the inventory!"<<endl;
+        return false;}
 
     //shift the array to remove that item 
     for(int i=index; i<inventoryCount-1; i++)
