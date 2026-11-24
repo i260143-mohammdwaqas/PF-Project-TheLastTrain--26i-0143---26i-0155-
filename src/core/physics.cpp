@@ -3,7 +3,7 @@
 #include "util.h"
 using namespace std;
 
-//canTraverse? emergencyTrip decrement, to be handle latter?
+//canTraverse? emergencyTrip decrement, to be handled latter?
 
 
 // Movement validation and resource adjustments without structures

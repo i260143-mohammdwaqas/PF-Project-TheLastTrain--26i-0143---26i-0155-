@@ -7,7 +7,7 @@ using namespace std;
 
 // Modular implementation using primitive arrays for map parsing and verification
 
-//VERTTICAL CONNECTIONS ARE NOT HANDLED?
+//VERTTICAL CONNECTIONS ARE NOT HANDLED(properly)?
 
 
 

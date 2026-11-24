@@ -9,7 +9,8 @@
 using namespace std;
 
 
-//handleUnlockCabinet? (not sure about wether some items should be remved, once used), to be handle latter?
+//handleUnlockCabinet? (not sure about wether some items should be remved, once used), to be handled latter?
+//confirm which item shoud be handled by handleusecommand?
 //changed the parameters of checkEndConditions??
 
 // Modular simulation loop using primitive variables
