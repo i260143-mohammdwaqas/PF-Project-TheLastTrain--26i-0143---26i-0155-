@@ -4,7 +4,8 @@
 using namespace std;
 
 //canTraverse? emergencyTrip decrement, to be handled latter?
-
+//added myOwn functions isValidInventory ?
+// and isValidEntity, to check wether an an item in the inventory or entity is valid??
 
 // Movement validation and resource adjustments without structures
 bool isDirectlyConnected(int fromF, int fromR, int toF, int toR,
@@ -139,7 +140,6 @@ bool canTraverse(int targetFloor, int targetRoom, char connType,
                  }
  
 
-
 void applyResourceDelta(int& energy, int& time, int deltaEnergy, int deltaTime)
 {
     //add change in energy to update enrgy value;
@@ -175,6 +175,38 @@ void applyScoreDelta(int& score, int deltaScore)
 
 }
 
+
+bool isValidInventory(char itemSymbol)
+{
+    //check if item symbol is valid
+    if(itemSymbol==ENT_CABINET_TRAIN_KEY|| itemSymbol==ENT_CAT_CARRIER || itemSymbol==ENT_EMERGENCY_CARD)
+    return true;
+
+    if(itemSymbol==ENT_FUSE || itemSymbol==ENT_LIFT_PASS || itemSymbol==ENT_MASTER_KEY || itemSymbol==ENT_MEDICAL_KIT)
+    return true;
+
+  
+
+    return false;
+}
+
+bool isValidEntity(char itemSymbol)
+{
+    //check if item symbol is valid
+    if(itemSymbol==ENT_CABINET_TRAIN_KEY || itemSymbol==ENT_CAT || itemSymbol==ENT_CAT_CARRIER || itemSymbol==ENT_CLUE_2)
+    return true;
+
+    if(itemSymbol==ENT_CLUE_7 || itemSymbol==ENT_CONTROL_PANEL || itemSymbol==ENT_EMERGENCY_CARD || itemSymbol==ENT_EMERGENCY_TOOLKIT)
+    return true;
+
+    if(itemSymbol==ENT_FUSE || itemSymbol==ENT_LIFT_PASS || itemSymbol==ENT_MASTER_KEY || itemSymbol==ENT_MEDICAL_KIT)
+    return true;
+
+    if(itemSymbol==ENT_PASSENGER || itemSymbol==ENT_OBSERVATION_TOKEN || itemSymbol==ENT_ENERGY_PACK || itemSymbol==ENT_CLUE_4)
+    return true;
+
+    return false;
+}
 
 bool hasItem(const char inventory[MAX_INVENTORY_CAPACITY], int inventoryCount, char itemSymbol)
 {

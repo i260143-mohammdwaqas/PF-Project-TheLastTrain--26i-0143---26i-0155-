@@ -15,6 +15,9 @@ bool canTraverse(int targetFloor, int targetRoom, char connType,
 void applyResourceDelta(int& energy, int& time, int deltaEnergy, int deltaTime);
 void applyScoreDelta(int& score, int deltaScore);
 
+bool isValidInventory(char itemSymbol);
+bool isValidEntity(char itemSymbol);
+
 bool hasItem(const char inventory[MAX_INVENTORY_CAPACITY], int inventoryCount, char itemSymbol);
 bool addItem(char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount, char itemSymbol);
 bool removeItem(char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount, char itemSymbol);

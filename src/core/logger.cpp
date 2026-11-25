@@ -1,11 +1,18 @@
 #include<iostream>
+#include<string>
+#include<cctype>
 #include<fstream>
 #include "logger.h"
 #include "util.h"
 #include "level.h"
+#include "physics.h"
 using namespace std;
 
 // File persistence for savegame.txt and game_summary.txt using primitive variables
+
+//created my own function for converting string to integer, convertToInt?
+
+
 bool saveGameStateToFile(const char* filename,
                          int playerFloor, int playerRoom,
                          int energy, int time, int score,
@@ -31,6 +38,16 @@ bool saveGameStateToFile(const char* filename,
                                 return false;
                             }
 
+                             //validate the inventory symbol
+                             for(int i=0; i<inventoryCount; i++)
+                              if(!isValidInventory(inventory[i]))
+                                {
+                                    cout<<"Invalid inventory symbol!"<<endl;
+                                        return false;
+                                }                                        
+
+
+
                             //validate entity counts
                             for(int i=0; i<NUM_FLOORS; i++)
                             {
@@ -40,6 +57,22 @@ bool saveGameStateToFile(const char* filename,
                                     {
                                         cout<<"Invalid entity count!"<<endl;
                                         return false;
+                                    }
+                                }
+                            }
+
+                            //validate entity symbols
+                            for(int i=0; i<NUM_FLOORS; i++)
+                            {
+                                for(int j=0; j<ROOMS_PER_FLOOR; j++)
+                                {
+                                    for(int k=0; k<entityCounts[i][j]; k++)
+                                    {
+                                        if(!isValidEntity(roomEntities[i][j][k]))
+                                        {
+                                            cout<<"Invalid entity symbol!"<<endl;
+                                            return false;
+                                        }
                                     }
                                 }
                             }
@@ -82,7 +115,8 @@ bool saveGameStateToFile(const char* filename,
                             file<<"Player's Room: "<<playerRoom<<endl;
 
 
-                            file<<"\nEnergy: "<<energy<<" "<<"Score: "<<score<<" "<<"Time: "<<time<<endl;
+
+                            file<<"\nEnergy: "<<energy<<"\nScore: "<<score<<"\nTime: "<<time<<endl;
 
 
                             file<<"\n"<<endl;
@@ -125,7 +159,7 @@ bool saveGameStateToFile(const char* filename,
                                 for(int j=0; j<ROOMS_PER_FLOOR; j++)
                                 {
                                     file<<endl;
-                                    file<<"Floor: "<<i+1<<" Room: "<<j+1<<endl;
+                                    file<<"Floor: "<<i+1<<"\nRoom: "<<j+1<<endl;
                                     file<<"Entity Count: "<<entityCounts[i][j]<<endl;
                                     file<<"Entities: ";
                                     for(int z=0; z<entityCounts[i][j]; z++)
@@ -147,10 +181,43 @@ bool saveGameStateToFile(const char* filename,
                                 return false;
                             }
 
-                            return 1;
+                            return true;
+
+                        }
+   
+
+//converts the string to integer, returns false if the string is not a valid integer              
+bool convertToInt(const string& str, int& value)
+{
+    // Use std::stoi to convert string to integer, with error handling
+    //size_t is used to store postions 
+    size_t pos;
+
+    //if there is an error in the conversion, it will throw an exception, which we can catch and return false
+    try
+    {
+        value=stoi(str, &pos);
+
+        // whitespace sre counted as well
+        while(pos<str.length() && isspace(str[pos]))
+        {
+            pos++;
+        }
+
+        if(pos<str.length())
+        {
+            return false;
+        }
+    
+        return true;
+    }
+    catch(...)
+    {
+        return false;
+    }
+}
 
 
-                         }
 
 
 
@@ -163,6 +230,43 @@ bool loadGameStateFromFile(const char* filename,
                            char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
                            int entityCounts[NUM_FLOORS][ROOMS_PER_FLOOR])
                            {
+                            //initialize variables to -1 so that we can check wether the values have been set or not
+                            inventoryCount=-1;
+                            emergencyTripsLeft=-1;
+                            playerFloor=-1;
+                            playerRoom=-1;
+                            energy=-1;
+                            time=-1;
+                            score=-1;
+
+                            //checks wether the inventory section has been read or not
+                            bool readingInventory=false;
+
+                           //inialize all objectives to false
+                            for(int i=0; i<NUM_OBJECTIVES; i++)
+                               objectives[i]=false;
+
+                            //check wether the objectives have been read or not,
+                            bool readingObjectives[NUM_OBJECTIVES]={false};
+
+                            //check wther the entitiees section for each room has been read or not, if not then return false
+                            bool readingEntities[NUM_FLOORS][ROOMS_PER_FLOOR]={false};
+                        
+                            //initialize the room entities to none
+                            for(int i=0; i<NUM_FLOORS; i++) 
+                            {
+                                for(int j=0; j<ROOMS_PER_FLOOR; j++)
+                                {
+                                    //initialize entity counts to -1, so that later we can check wether the record exists
+                                    entityCounts[i][j]=-1;
+
+                                    for(int k=0; k<MAX_ENTITIES_PER_ROOM; k++)
+                                    {
+                                    roomEntities[i][j][k]=ENT_NONE;
+                                    }
+                                }
+                            }
+
 
                             //validate file address stored in filename
                             if(filename==nullptr)
@@ -179,9 +283,12 @@ bool loadGameStateFromFile(const char* filename,
                                 return false;
                             }
 
+                            //inner loop variables
                             string line;
-                            int pos, f=0, r=0;
-
+                            string::size_type pos;
+                            int f=0, r=0, flag;
+                            
+                     
                             //read ech line of the file
                             while(getline(file, line))
                             {
@@ -192,13 +299,21 @@ bool loadGameStateFromFile(const char* filename,
                                 pos=line.find("Player's Floor: ");
                                 if(pos != string::npos)
                                 {
-                                    playerFloor=stoi(line.substr(pos+16));
+                                    if(!convertToInt(line.substr(pos+16), playerFloor))
+                                    {
+                                        cout<<"Invalid Player Floor!"<<endl;
+                                        return false;
+                                    }
                                 }
 
                                pos=line.find("Player's Room: ");
                                 if(pos != string::npos)
                                 {
-                                    playerRoom=stoi(line.substr(pos+15));
+                                    if(!convertToInt(line.substr(pos+15), playerRoom))
+                                    {
+                                        cout<<"Invalid Player Room!"<<endl;
+                                        return false;
+                                    }
                                 }
 
                                 
@@ -206,19 +321,31 @@ bool loadGameStateFromFile(const char* filename,
                                 pos=line.find("Energy: ");
                                 if(pos != string::npos)
                                 {
-                                    energy=stoi(line.substr(pos+8));
+                                    if(!convertToInt(line.substr(pos+8), energy))
+                                    {
+                                        cout<<"Invalid Energy!"<<endl;
+                                        return false;
+                                    }
                                 }
 
                                 pos=line.find("Time: ");
                                 if(pos != string::npos)
                                 {
-                                    time=stoi(line.substr(pos+6));
+                                    if(!convertToInt(line.substr(pos+6), time))
+                                    {
+                                        cout<<"Invalid Time!"<<endl;
+                                        return false;
+                                    }
                                 }
 
                                 pos=line.find("Score: ");
                                 if(pos != string::npos)
                                 {
-                                    score=stoi(line.substr(pos+7));;
+                                    if(!convertToInt(line.substr(pos+7), score))
+                                    {
+                                        cout<<"Invalid Score!"<<endl;
+                                        return false;
+                                    }
                                 }
 
 
@@ -228,23 +355,46 @@ bool loadGameStateFromFile(const char* filename,
                                 pos=line.find("Inventory Count: ");
                                 if(pos!= string::npos)
                                 {
-                                    inventoryCount=stoi(line.substr(pos+17));
-                                }
+                                    if(!convertToInt(line.substr(pos+17), inventoryCount))
+                                    {
+                                        cout<<"Invalid inventory count!"<<endl;
+                                        return false;
+                                    }
 
-                                //validate inventory count
-                                if(inventoryCount<0 || inventoryCount>MAX_INVENTORY_CAPACITY)
-                                {
-                                    cout<<"Invalid inventory count!"<<endl;
-                                    return false;
+                                   //validate inventory count
+                                   if(inventoryCount<0 || inventoryCount>MAX_INVENTORY_CAPACITY)
+                                   {
+                                      cout<<"Invalid inventory count!"<<endl;
+                                      return false;
+                                   }
                                 }
+                                
 
                                 pos=line.find("Inventory: ");
                                 if(pos!= string::npos)                                   
                                 { 
+                                   //check wether the characters are as much as inventory
+                                   if(inventoryCount>0 && line.length()<=pos+11+2*(inventoryCount-1))
+                                   {
+                                      cout<<"Invalid inventory data!"<<endl;
+                                      return false;
+                                    }
+
+
                                     for(int i=0; i<inventoryCount; i++)
                                     {
-                                        inventory[i]=line[pos+11+i*2];   
+                                        inventory[i]=line[pos+11+i*2]; 
+
+                                        //validate the inventory symbol
+                                        if(!isValidInventory(inventory[i]))
+                                        {
+                                            cout<<"Invalid inventory symbol!"<<endl;
+                                            return false;
+                                        }  
                                     } 
+
+                                    readingInventory=true;
+
                                 }
  
     
@@ -254,113 +404,327 @@ bool loadGameStateFromFile(const char* filename,
                                 pos=line.find("Emergency Trips Left: ");
                                 if(pos != string::npos)
                                 {
-                                    emergencyTripsLeft=stoi(line.substr(pos+22));
+                                    if(!convertToInt(line.substr(pos+22), emergencyTripsLeft))
+                                    {
+                                        cout<<"Invalid Emergency Trips Left!"<<endl;
+                                        return false;
+                                    }
                                 }
 
 
 
 
                                 //find objectives section
+                                //validate wether the values are binary
                                 //set objectives 1 or 0 accordingly
                                 pos=line.find("Master Key: ");
                                 if(pos!= string::npos)
                                 {
-                                    objectives[OBJ_MASTER_KEY]=stoi(line.substr(pos+12));                                   
+                                    if(!convertToInt(line.substr(pos+12), flag))
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+
+                                    if(flag!=1 && flag!=0)
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    objectives[OBJ_MASTER_KEY]=flag;
+                                    readingObjectives[OBJ_MASTER_KEY]=true;
+
                                 }
 
                                 pos=line.find("Cabinet Unlocked: ");
                                 if(pos!= string::npos)
                                 {
-                                    objectives[OBJ_CABINET_UNLOCKED]=stoi(line.substr(pos+18));                                   
+                                    if(!convertToInt(line.substr(pos+18), flag))
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+
+                                    if(flag!=1 && flag!=0)
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    objectives[OBJ_CABINET_UNLOCKED]=flag;
+                                    readingObjectives[OBJ_CABINET_UNLOCKED]=true;
                                 }
 
                                 pos=line.find("Cat Carrier: ");
                                 if(pos!= string::npos)
                                 {
-                                    objectives[OBJ_CAT_CARRIER]=stoi(line.substr(pos+13));                                   
+                                    if(!convertToInt(line.substr(pos+13), flag))
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+
+                                    if(flag!=1 && flag!=0)
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    objectives[OBJ_CAT_CARRIER]=flag;
+                                    readingObjectives[OBJ_CAT_CARRIER]=true;
                                 }
 
                                 pos=line.find("Cat Secured: ");
                                 if(pos!= string::npos)
                                 {
-                                    objectives[OBJ_CAT_SECURED]=stoi(line.substr(pos+13));                                   
+                                    if(!convertToInt(line.substr(pos+13), flag))
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+
+                                    if(flag!=1 && flag!=0)
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    objectives[OBJ_CAT_SECURED]=flag;
+                                    readingObjectives[OBJ_CAT_SECURED]=true;
                                 }
 
                                 pos=line.find("Clue Digit 2: ");
                                 if(pos!= string::npos)
                                 {
-                                    objectives[OBJ_CLUE_2]=stoi(line.substr(pos+14));                                   
+                                    if(!convertToInt(line.substr(pos+14), flag))
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+
+                                    if(flag!=1 && flag!=0)
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    objectives[OBJ_CLUE_2]=flag;
+                                    readingObjectives[OBJ_CLUE_2]=true;
                                 }
 
                                 pos=line.find("Clue Digit 4: ");
                                 if(pos!= string::npos)
                                 {
-                                    objectives[OBJ_CLUE_4]=stoi(line.substr(pos+14));                                   
+                                    if(!convertToInt(line.substr(pos+14), flag))
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    if(flag!=1 && flag!=0)
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    objectives[OBJ_CLUE_4]=flag;                                  
+                                    readingObjectives[OBJ_CLUE_4]=true;
                                 }
 
                                 pos=line.find("Clue Digit 7: ");
                                 if(pos!= string::npos)
                                 {
-                                    objectives[OBJ_CLUE_7]=stoi(line.substr(pos+14));                                   
+                                    if(!convertToInt(line.substr(pos+14), flag))
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+
+                                    if(flag!=1 && flag!=0)
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    objectives[OBJ_CLUE_7]=flag;                                   
+                                    readingObjectives[OBJ_CLUE_7]=true;
                                 }
 
                                 pos=line.find("Fuse Collected: ");
                                 if(pos!= string::npos)
                                 {
-                                    objectives[OBJ_FUSE_COLLECTED]=stoi(line.substr(pos+16));                                   
+                                    if(!convertToInt(line.substr(pos+16), flag))
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+
+                                    if(flag!=1 && flag!=0)
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    objectives[OBJ_FUSE_COLLECTED]=flag;                                   
+                                    readingObjectives[OBJ_FUSE_COLLECTED]=true;
                                 }
 
                                 pos=line.find("Fuse Installed: ");
                                 if(pos!= string::npos)
                                 {
-                                    objectives[OBJ_FUSE_INSTALLED]=stoi(line.substr(pos+16));                                   
+                                    if(!convertToInt(line.substr(pos+16), flag))
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+
+                                    if(flag!=1 && flag!=0)
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    objectives[OBJ_FUSE_INSTALLED]=flag;                                   
+                                    readingObjectives[OBJ_FUSE_INSTALLED]=true;
                                 }
 
                                 pos=line.find("Lift 2 Active: ");
                                 if(pos!= string::npos)
                                 {
-                                    objectives[OBJ_LIFT2_ACTIVE]=stoi(line.substr(pos+15));                                   
+                                    if(!convertToInt(line.substr(pos+15), flag))
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+
+                                    if(flag!=1 && flag!=0)
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    objectives[OBJ_LIFT2_ACTIVE]=flag;                                   
+                                    readingObjectives[OBJ_LIFT2_ACTIVE]=true;
                                 }
 
                                 pos=line.find("Lift Pass: ");
                                 if(pos!= string::npos)
                                 {
-                                    objectives[OBJ_LIFT_PASS]=stoi(line.substr(pos+11));                                   
+                                    if(!convertToInt(line.substr(pos+11), flag))
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+
+                                    if(flag!=1 && flag!=0)
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    objectives[OBJ_LIFT_PASS]=flag;                                   
+                                    readingObjectives[OBJ_LIFT_PASS]=true;
                                 }
 
 
                                 pos=line.find("Mission Failed: ");
                                 if(pos!= string::npos)
                                 {
-                                    objectives[OBJ_MISSION_FAILED]=stoi(line.substr(pos+16));                                   
+                                    if(!convertToInt(line.substr(pos+16), flag))
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+
+                                    if(flag!=1 && flag!=0)
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    objectives[OBJ_MISSION_FAILED]=flag;                                   
+                                    readingObjectives[OBJ_MISSION_FAILED]=true;
                                 }
 
 
                                 pos=line.find("Mission Won: ");
                                 if(pos!= string::npos)
                                 {
-                                    objectives[OBJ_MISSION_WON]=stoi(line.substr(pos+13));                                   
+                                    if(!convertToInt(line.substr(pos+13), flag))
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+
+                                    if(flag!=1 && flag!=0)
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    objectives[OBJ_MISSION_WON]=flag;                                   
+                                    readingObjectives[OBJ_MISSION_WON]=true;
                                 }
 
 
                                 pos=line.find("Passenger Rescued: ");
                                 if(pos!= string::npos)
                                 {
-                                    objectives[OBJ_PASSENGER_RESCUED]=stoi(line.substr(pos+19));                                   
+                                    if(!convertToInt(line.substr(pos+19), flag))
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    if(flag!=1 && flag!=0)
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    objectives[OBJ_PASSENGER_RESCUED]=flag;
+                                    readingObjectives[OBJ_PASSENGER_RESCUED]=true;
                                 }
 
 
                                 pos=line.find("Train Key: ");
                                 if(pos!= string::npos)
                                 {
-                                    objectives[OBJ_TRAIN_KEY]=stoi(line.substr(pos+11));                                   
+                                    if(!convertToInt(line.substr(pos+11), flag))
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+
+                                    if(flag!=1 && flag!=0)
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    objectives[OBJ_TRAIN_KEY]=flag;
+                                    readingObjectives[OBJ_TRAIN_KEY]=true;
                                 }
 
 
                                 pos=line.find("Train Prepared: ");
                                 if(pos!= string::npos)
                                 {
-                                    objectives[OBJ_TRAIN_PREPARED]=stoi(line.substr(pos+16));                                   
+                                    if(!convertToInt(line.substr(pos+16), flag))
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+
+                                    if(flag!=1 && flag!=0)
+                                    {
+                                        cout<<"Invalid objectives data!"<<endl;
+                                        return false;
+                                    }
+                                    
+                                    objectives[OBJ_TRAIN_PREPARED]=flag;
+                                    readingObjectives[OBJ_TRAIN_PREPARED]=true;
                                 }
                  
                                 
@@ -370,13 +734,21 @@ bool loadGameStateFromFile(const char* filename,
                                 pos=line.find("Floor: ");
                                 if(pos != string::npos && line.find("Player's Floor: ")==string::npos)
                                 {
-                                    f=stoi(line.substr(pos+7));
+                                    if(!convertToInt(line.substr(pos+7), f))
+                                    {
+                                        cout<<"Invalid floor data!"<<endl;
+                                        return false;
+                                    }
                                 }
 
                                 pos=line.find("Room: ");
                                 if(pos != string::npos && line.find("Player's Room: ")==string::npos)
                                 {
-                                    r=stoi(line.substr(pos+6));
+                                    if(!convertToInt(line.substr(pos+6), r))
+                                    {
+                                        cout<<"Invalid room data!"<<endl;
+                                        return false;
+                                    }
                                 }
 
 
@@ -389,7 +761,11 @@ bool loadGameStateFromFile(const char* filename,
                                         return false;
                                     }
 
-                                    entityCounts[f-1][r-1]=stoi(line.substr(pos+14));
+                                    if(!convertToInt(line.substr(pos+14), entityCounts[f-1][r-1]))
+                                    {
+                                        cout<<"Invalid entity count!"<<endl;
+                                        return false;
+                                    }
 
                                     if(entityCounts[f-1][r-1]<0 || entityCounts[f-1][r-1]>MAX_ENTITIES_PER_ROOM)
                                     {
@@ -404,13 +780,44 @@ bool loadGameStateFromFile(const char* filename,
                                 //run a a loop on the line, wheneve a symbol is found its stored 
                                 if(pos != string::npos)
                                 {
-                                    for(int i=0; i<entityCounts[f-1][r-1]; i++)
+                                    //validate floor and room
+                                    if(f<1 || f>NUM_FLOORS || r<1 || r>ROOMS_PER_FLOOR)
                                     {
+                                        cout<<"Invalid floor or room!"<<endl;
+                                        return false;
+                                    }
+
+                                    //validate that entities are equal to entity counts
+                                    if(entityCounts[f-1][r-1]>0 && line.length()<=pos+10+2*(entityCounts[f-1][r-1]-1))
+                                    {
+                                        cout<<"Invalid entity data!"<<endl;
+                                        return false;
+                                    }
+
+                                    for(int i=0; i<entityCounts[f-1][r-1]; i++)
+                                    {                                        
                                         //multiply i by 2 so that spaces are skipped
                                         roomEntities[f-1][r-1][i]=line[pos+10+i*2];
+
+                                        //validate that the entity is valid
+                                        if(!isValidEntity(roomEntities[f-1][r-1][i]))
+                                        {
+                                            cout<<"Invalid Entity symbol!"<<endl;
+                                            return false;
+                                        }
                                     }
+
+                                    
+                                    readingEntities[f-1][r-1]=true;
                                 }
 
+                            }
+
+                            //check if there was an error opening the file
+                            if(file.bad())
+                            {
+                                cout<<"Error! reading the Game Progress file"<<endl;
+                                return false;
                             }
                             file.close();
 
@@ -440,6 +847,38 @@ bool loadGameStateFromFile(const char* filename,
                             if(emergencyTripsLeft<0 || emergencyTripsLeft>3)
                             {
                                 cout<<"Invalid emergency trips!"<<endl;
+                                return false;
+                            }
+
+                            //check wether there wwere msiisng fields
+                            
+                            if(readingInventory==false || inventoryCount==-1 )
+                            {
+                                cout<<"Missing inventory data!"<<endl;
+                                return false;
+                            }
+                            for(int i=0; i<NUM_FLOORS; i++)
+                            {
+                                for(int j=0; j<ROOMS_PER_FLOOR; j++)
+                                if(entityCounts[i][j]==-1 || readingEntities[i][j]==false)
+                                {
+                                    cout<<"Missing entity data for floor "<<i+1<<" room "<<j+1<<endl;
+                                    return false;
+                                }
+                            }
+
+                            for(int i=0; i<NUM_OBJECTIVES; i++)
+                            {
+                               if(readingObjectives[i]==false)
+                                {
+                                   cout<<"Missing objective data!"<<endl;
+                                   return false;
+                                }
+                            }
+
+                            if(playerFloor==-1 || playerRoom==-1 || energy==-1 || time==-1 || score==-1 || emergencyTripsLeft==-1)
+                            {
+                                cout<<"Missing player data!"<<endl;
                                 return false;
                             }
 
