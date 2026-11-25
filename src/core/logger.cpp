@@ -31,7 +31,40 @@ bool saveGameStateToFile(const char* filename,
                                 return false;
                             }
 
-                            //validate invnentory count
+
+                            //validate the arrays
+                            if(inventory==nullptr)
+                            {
+                                cout<<"Invalid inventory data!"<<endl;
+                                return false;
+                            }
+
+                            if(roomEntities==nullptr)
+                            {
+                                cout<<"Invalid room entities data!"<<endl;
+                                return false;
+                            }
+
+                            if(entityCounts==nullptr)
+                            {
+                                cout<<"Invalid entity counts data!"<<endl;
+                                return false;
+                            }
+
+                            if(objectives==nullptr)
+                            {
+                                cout<<"Invalid objectives data!"<<endl;
+                                return false;
+                            }
+
+                            //vaidate the file address stored in filename
+                            if(filename==nullptr)
+                            {
+                                cout<<"Invalid filename!"<<endl;
+                                return false;
+                            }
+
+                            //validate inventory count
                             if(inventoryCount<0 || inventoryCount>MAX_INVENTORY_CAPACITY)
                             {
                                 cout<<"Invalid inventory!"<<endl;
@@ -89,13 +122,6 @@ bool saveGameStateToFile(const char* filename,
                                 cout<<"Invalid emergency trips!"<<endl;
                                 return false;
                             }
-
-                            if(filename==nullptr)
-                            {
-                                cout<<"Invalid filename!"<<endl;
-                                return false;
-                            }
-
 
                             //open the file for writing
                             ofstream file(filename);
@@ -230,6 +256,39 @@ bool loadGameStateFromFile(const char* filename,
                            char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
                            int entityCounts[NUM_FLOORS][ROOMS_PER_FLOOR])
                            {
+                            //check wether the arrays are valid or not, if not return false
+                            if(inventory==nullptr)
+                            {
+                                cout<<"Invalid inventory data!"<<endl;
+                                return false;
+                            }
+
+                            if(objectives==nullptr)
+                            {
+                                cout<<"Invalid objectives data!"<<endl;
+                                return false;
+                            }
+
+                            if(roomEntities==nullptr)
+                            {
+                                cout<<"Invalid room entities data!"<<endl;
+                                return false;
+                            }
+
+                            if(entityCounts==nullptr)
+                            {
+                                cout<<"Invalid entity counts data!"<<endl;
+                                return false;
+                            }
+
+                            //validate file address stored in filename
+                            if(filename==nullptr)
+                            {
+                                cout<<"Invalid filename!"<<endl;
+                                return false;
+                            }
+
+                            
                             //initialize variables to -1 so that we can check wether the values have been set or not
                             inventoryCount=-1;
                             emergencyTripsLeft=-1;
@@ -238,6 +297,7 @@ bool loadGameStateFromFile(const char* filename,
                             energy=-1;
                             time=-1;
                             score=-1;
+
 
                             //checks wether the inventory section has been read or not
                             bool readingInventory=false;
@@ -267,13 +327,6 @@ bool loadGameStateFromFile(const char* filename,
                                 }
                             }
 
-
-                            //validate file address stored in filename
-                            if(filename==nullptr)
-                            {
-                                cout<<"Invalid filename!"<<endl;
-                                return false;
-                            }
 
                             //open the file
                             ifstream file(filename);
@@ -882,8 +935,6 @@ bool loadGameStateFromFile(const char* filename,
                                 return false;
                             }
 
-                            
-     
 
 
 
@@ -895,4 +946,71 @@ bool loadGameStateFromFile(const char* filename,
 void writeGameSummaryReport(const char* filename,
                             int score, int remainingEnergy, int remainingTime,
                             const bool objectives[NUM_OBJECTIVES], bool victory)
-                            {}                       
+                            {
+                                //check if resources and other variables contain correct values
+                                if(score<0 || remainingEnergy<0 || remainingEnergy>MAX_ENERGY || remainingTime<0 || remainingTime>MAX_TIME)
+                                {
+                                    cout<<"Report could not be written, Invalid data!"<<endl;
+                                    return;
+
+                                }
+
+                                if(objectives==nullptr)
+                                {
+                                    cout<<"Report could not be written, Invalid objectives data!"<<endl;
+                                    return;
+                                }
+
+
+                                //check wether folder name is incorrect
+                                if(filename==nullptr)
+                                {
+                                    cout<<"Report could not be wrtten, Invalid filename!"<<endl;
+                                    return;
+                                }
+
+                                //open the file for writing
+                                ofstream file(filename);
+                                //check whether the file opended succesfully
+                                if(!file.is_open())
+                                {
+                                    cout<<"Report file could not be opened!"<<endl;
+                                    return;
+                                }
+
+                                file<<"    THE LAST TRAIN - GAME SUMMARY"<<endl;
+                                
+                                file<<"\nMission Result: "<<(victory? "Victory" : "Failure")<<endl;
+                                file<<"Final Score: "<<score<<endl;
+                                file<<"Remaining Energy: "<<remainingEnergy<<endl;
+                                file<<"Remaining Time: "<<remainingTime<<endl;
+
+                                file<<"      Objectives"<<endl;
+                                file<<"Master Key: "<<(objectives[OBJ_MASTER_KEY]? "Completed" : "Not Completed")<<endl;
+                                file<<"Cabinet Unlocked: "<<(objectives[OBJ_CABINET_UNLOCKED]? "Completed" : "Not Completed")<<endl;
+                                file<<"Cat Carrier: "<<(objectives[OBJ_CAT_CARRIER]? "Completed" : "Not Completed")<<endl;
+                                file<<"Cat Secured: "<<(objectives[OBJ_CAT_SECURED]? "Completed" : "Not Completed")<<endl;
+                                file<<"Clue Digit 2: "<<(objectives[OBJ_CLUE_2]? "Completed" : "Not Completed")<<endl;
+                                file<<"Clue Digit 4: "<<(objectives[OBJ_CLUE_4]? "Completed" : "Not Completed")<<endl;
+                                file<<"Clue Digit 7: "<<(objectives[OBJ_CLUE_7]? "Completed" : "Not Completed")<<endl;
+                                file<<"Fuse Collected: "<<(objectives[OBJ_FUSE_COLLECTED]? "Completed" : "Not Completed")<<endl;
+                                file<<"Fuse Installed: "<<(objectives[OBJ_FUSE_INSTALLED]? "Completed" : "Not Completed")<<endl;
+                                file<<"Lift 2 Active: "<<(objectives[OBJ_LIFT2_ACTIVE]? "Completed" : "Not Completed")<<endl;
+                                file<<"Lift Pass: "<<(objectives[OBJ_LIFT_PASS]? "Completed" : "Not Completed")<<endl;
+                                file<<"Mission Failed: "<<(objectives[OBJ_MISSION_FAILED]? "Completed" : "Not Completed")<<endl;
+                                file<<"Mission Won: "<<(objectives[OBJ_MISSION_WON]? "Completed" : "Not Completed")<<endl;
+                                file<<"Passenger Rescued: "<<(objectives[OBJ_PASSENGER_RESCUED]? "Completed" : "Not Completed")<<endl;
+                                file<<"Train Key: "<<(objectives[OBJ_TRAIN_KEY]? "Completed" : "Not Completed")<<endl;
+                                file<<"Train Prepared: "<<(objectives[OBJ_TRAIN_PREPARED]? "Completed" : "Not Completed")<<endl;
+
+                                file.close();
+
+                                if(!file)
+                                {
+                                    cout<<"Report could not be written!"<<endl;
+                                    return;
+                                }
+
+                                cout<<"Game Summary Report written to "<<filename<<endl;
+
+                            }                      
