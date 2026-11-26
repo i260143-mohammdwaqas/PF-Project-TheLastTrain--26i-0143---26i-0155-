@@ -1,6 +1,7 @@
 #include<iostream>
 #include "physics.h"
 #include "util.h"
+#include "switches.h"
 using namespace std;
 
 //canTraverse? emergencyTrip decrement, to be handled latter?
@@ -8,6 +9,56 @@ using namespace std;
 // and isValidEntity, to check wether an an item in the inventory or entity is valid??
 
 // Movement validation and resource adjustments without structures
+
+bool isVerticallyConnected(int fromF, int fromR, int toF, int toR,
+                           char& outConnType)
+                           {
+
+                            
+                            //check wether both rooms are direcly connnected vertically throuugh stairs
+                            if((fromF==1 || fromF==2) && (toF==1 || toF==2) && fromR==1 && toR==1)
+                            {
+                                outConnType='S';
+                                return true
+                            }
+
+                            if((fromF==2 || fromF==3) && (toF==2 || toF==3) && fromR==1 && toR==1)
+                            {
+                                outConnType='S';
+                                return true;
+                            }
+
+                            if((fromF==4 || fromF==5) && (toF==4 || toF==5) && fromR==1 && toR==1)
+                            {
+                                outConnType='S';
+                            }
+
+                            //lifts
+
+                            //lift 1 connects floors 1, 2 and room 3, room 2
+                            if(canUseLift1(fromF, toF) && fromR == toR &&
+                                   (fromR == 2 || fromR == 3))
+                                   {
+                                     outConnType = '1';
+                                     return true;
+                                    }
+
+                            // Lift 2
+                        if(canUseLift2(fromF, toF, true, 0) && fromR == 4 && toR == 4)
+                         {
+                            outConnType = '2';
+                            return true;
+                        }
+
+
+                            return false;
+
+
+                  }
+
+
+
+
 bool isDirectlyConnected(int fromF, int fromR, int toF, int toR,
                          const char horizontalConn[NUM_FLOORS][ROOMS_PER_FLOOR - 1],
                          char& outConnType)
@@ -42,49 +93,12 @@ bool isDirectlyConnected(int fromF, int fromR, int toF, int toR,
 
                             }
 
-        
-
-                          
-                            
-                            //check wether both rooms are direcly connnected vertically throuugh stairs
-                            else if((fromF==1 || fromF==2) && (toF==1 || toF==2) && fromR==1 && toR==1)
+                            //check if the rooms are vertically connected, if yes set the outConnType accordingly                   
+                            if(isVerticallyConnected(fromF, fromR, toF, toR, outConnType))
                             {
-                                outConnType='S';
+                                return true;
                             }
 
-                            else if((fromF==2 || fromF==3) && (toF==2 || toF==3) && fromR==1 && toR==1)
-                            {
-                                outConnType='S';
-                            }
-
-                            else if((fromF==4 || fromF==5) && (toF==4 || toF==5) && fromR==1 && toR==1)
-                            {
-                                outConnType='S';
-                            }
-
-                            //lifts
-
-                            //lift 1 connects floors 1, 2 and room 3, room 2
-                            else if((fromF==1 || fromF==2) && (toF==1 || toF==2) && fromR==toR && (fromR==2 || fromR==3))
-                            {
-                                outConnType='1';
-                            }
-
-                            //lift 2 connects floors 2 ,4 and 5 and room 4;
-                            else if((fromF==2 || fromF==4) && (toF==2 || toF==4) && fromR==4 && toR==4)
-                            {
-                                outConnType='2';
-                            }
-
-                            else if((fromF==2 || fromF==5) && (toF==2 || toF==5) && fromR==4 && toR==4)
-                            {
-                                outConnType='2';
-                            }
-
-                            else if((fromF==4 || fromF==5) && (toF==4 || toF==5) && fromR==4 && toR==4)
-                            {
-                                outConnType='2';
-                            }
 
 
                             if(outConnType==' ' || outConnType=='#')
@@ -149,17 +163,10 @@ void applyResourceDelta(int& energy, int& time, int deltaEnergy, int deltaTime)
     time+= deltaTime;
 
     //clamp energy and time values to ensure, they remain within range;
-    if(energy<0)
-    energy=0;
+  clampInt(energy, 0, MAX_ENERGY);
+  clampInt(time, 0, MAX_TIME);
 
-    if(time<0)
-    time=0;
 
-    if(energy>MAX_ENERGY)
-    energy=MAX_ENERGY;
-
-    if(time>MAX_TIME)
-    time=MAX_TIME;
 }
 
 

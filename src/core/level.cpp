@@ -172,12 +172,6 @@ bool loadBuildingMap(const char* filename,
 
                     return true;
 				}
-
-
-
-                       
-
-
                         
                         
 

@@ -8,10 +8,11 @@ const int TOTAL_ROOMS = 20;
 
 // --- Resource Pools ---
 const int MAX_ENERGY = 100;
-const int MAX_TIME = 50;
+const int MAX_TIME = 100;
 const int INITIAL_ENERGY = 100;
 const int INITIAL_TIME = 50;
 const int INITIAL_SCORE = 0;
+const int MAX_SCORE = 520;
 
 // --- Inventory & Array Capacities ---
 const int MAX_INVENTORY_CAPACITY = 10;

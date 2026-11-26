@@ -32,42 +32,19 @@ void runSimulation(int& playerFloor, int& playerRoom,
                     //main loop
                     while(gameRunning)
                     {
+                        clearScreen();
+                        printHeader("THE LAST TRAIN");
                         //display current status
-                        cout<<"--------------------Current Status--------------------"<<endl;
+                        //cout<<"--------------------Current Status--------------------"<<endl;
 
-                        cout<<"\nLocation: Floor "<<playerFloor<<", Room "<<playerRoom<<endl;
+                        //display inventory, score, energy, time, location, emergency trips left
+                        renderDashboard(playerFloor, playerRoom, energy, time, score, inventory, inventoryCount, emergencyTripsLeft);
 
-                        cout<<"\nEnergy Remeaining: "<<energy<<endl;
-                        cout<<"Time Remaining: "<<time<<endl;
-                        cout<<"Score: "<<score<<endl;
-                        cout<<"Emergency Trips Left: "<<emergencyTripsLeft<<endl;
+                        //display objectives checklist
+                        renderObjectivesChecklist(objectives);
 
-                        //display inventory
-                        cout<<"\n Inventory: ";
-                       
-                        //if inventory count is 0 display empty
-                        if(inventoryCount==0)
-                        cout<<"empty"<<endl;
-                        
-                        //convert the inventory symbols to their names and display
-                        else
-                        {
-                        for(int i=0; i<inventoryCount; i++)
-                            cout<<getEntityName(inventory[i])<<" ";
-                        
-                        cout<<endl;
-                         }
-
-                        //display objectives
-                        cout<<"\nPassenger: "<<(objectives[OBJ_PASSENGER_RESCUED]? "Rescued" : "Not Rescued")<<endl;
-                        cout<<"Cat: "<<(objectives[OBJ_CAT_SECURED]? "Secured" : "Not Secured")<<endl;
-                        cout<<"Cabinet: "<<(objectives[OBJ_CABINET_UNLOCKED]? "Unlocked" : "Locked")<<endl;
-                        cout<<"Train key: "<<(objectives[OBJ_TRAIN_KEY]? "Collected" : "Not Collected")<<endl;
-                        cout<<"Train Prepared: "<<(objectives[OBJ_TRAIN_PREPARED]? "yes" : "No")<<endl;
-                        cout<<"Fuse Collected: "<<(objectives[OBJ_FUSE_COLLECTED]? "Yes" : "No")<<endl;
-                        cout<<"Fuse Installed: "<<(objectives[OBJ_FUSE_INSTALLED]? "Yes" : "No")<<endl;
-                        cout<<"Lift pass: "<<(objectives[OBJ_LIFT_PASS]? "Collected" : "Not Collected")<<endl;
-                        cout<<"Lift 2: "<<(objectives[OBJ_LIFT2_ACTIVE]? "operational" : "Not operational")<<endl;
+                        //dislay the building in ascii art, with the player location marked
+                        renderAsciiBuilding(playerFloor, playerRoom);
 
                          //take input from the user for next command;
                         cout<<"\nEnter command (M=move, I=inspect, C=collect an item, U=use, X=unlock cabinet, H=help, Q=quit): ";
@@ -309,18 +286,11 @@ bool handleInspectCommand(int currentFloor, int currentRoom,
                              int deltaScore=0;
 
                             //print room entites
-                            if(entityCount==0)
-                            cout<<"current Room does not contain any items"<<endl;
+                            renderRoomDetails(currentFloor, currentRoom, roomEntities, entityCount);
                             
-                           
-
-                            else
-                            {
-                            cout<<"Romm entities: ";
+                        
                             for(int i=0; i<entityCount; i++)
                             {
-                            cout<<getEntityName(roomEntities[currentFloor-1][currentRoom-1][i])<<" ";
-
                             //clues are exposed on inspection
                             //update the score on inspection of clues, if they are present in the room
 
@@ -341,8 +311,9 @@ bool handleInspectCommand(int currentFloor, int currentRoom,
                                 objectives[OBJ_CLUE_7]=true;
                                 deltaScore=SCORE_CLUE_FOUND;
                             }
-                        }
-                    }
+                          
+                            }
+                    
                              
                             //call the function to update the score, for clues;
                             applyScoreDelta(score, deltaScore);

@@ -20,6 +20,8 @@ bool loadGameStateFromFile(const char* filename,
                            char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
                            int entityCounts[NUM_FLOORS][ROOMS_PER_FLOOR]);
 
+bool convertToInt(const string& str, int& value);
+
 void writeGameSummaryReport(const char* filename,
                             int score, int remainingEnergy, int remainingTime,
                             const bool objectives[NUM_OBJECTIVES], bool victory);
