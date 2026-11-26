@@ -1,13 +1,14 @@
 #include<iostream>
 #include "level.h"
 #include "util.h"
+#include "logger.h"
 #include<fstream>
 #include<string>
 using namespace std;
 
 // Modular implementation using primitive arrays for map parsing and verification
 
-//VERTTICAL CONNECTIONS ARE NOT HANDLED(properly)?
+//starting room?
 
 
 
@@ -57,7 +58,7 @@ bool loadBuildingMap(const char* filename,
                         for(int i=0; i<lines; i++)
                         {
                             int r=0;
-                            for(int j=0 ; j<line[i].length(); j++)
+                            for(size_t j=0 ; j<line[i].length(); j++)
                              {
 
                               if(line[i][j]=='F')
@@ -92,9 +93,18 @@ bool loadBuildingMap(const char* filename,
 
 
                             //calculate floor number, helps in storing room connections in the correct floor and room
-                             if(line[i].find("F") != string::npos)
+                            //but first check wether the line has all the required F's for a floor, if not skip the line(it could be another line containing f)
+                            int countF = 0;
+
+                           for(size_t j = 0; j < line[i].length(); j++)
+                           {
+                             if(line[i][j] == 'F')
+                             countF++;
+                            }
+
+                             if(countF==ROOMS_PER_FLOOR)
                                 {
-                                int pos=line[i].find("F");
+                                size_t pos=line[i].find("F");
                                 //subtracting 0 char to get integer;
                                  f = line[i][pos + 1] - '0'-1;
 
@@ -103,17 +113,17 @@ bool loadBuildingMap(const char* filename,
                                   if(f<0 || f>=NUM_FLOORS)
                                     return false;    
 
-                               //k stores the room number
+                               //R stores the room number
 
-                               int k = 0;
+                               int R = 0;
 
                             //storing room connections in the horizontalConn array
-                            for(int j = 0; j < line[i].length(); j++)
+                            for(size_t j = 0; j < line[i].length(); j++)
                             {
                                 if(line[i][j] == 'W' || line[i][j] == 'D' ||
                                     line[i][j] == '#' || line[i][j] == 'L')
                                     {
-                                    if(k >= ROOMS_PER_FLOOR - 1)
+                                    if(R >= ROOMS_PER_FLOOR - 1)
                                      return false;
 
 
@@ -132,23 +142,24 @@ bool loadBuildingMap(const char* filename,
                                       } 
                                     else
                                     {                
-                                    horizontalConn[f][k] = line[i][j];
+                                    horizontalConn[f][R] = line[i][j];
                                     }
 
-                                    k++;
+                                    R++;
                                     }
                              }
 
-                             if(k != ROOMS_PER_FLOOR - 1)
+                             //validate the 
+                             if(R != ROOMS_PER_FLOOR - 1)
                                    return false;
                             }
                         //storing entities in the roomEntities array
                          if(i==temp+1)
                          {
-                            for(int j=0; j<line[i].length(); j++)
+                            for(size_t j=0; j<line[i].length(); j++)
                             {
-                                //check if end of the room has come
-                             if(r<ROOMS_PER_FLOOR - 1 && posR[r+1]==j)
+                            //check if end of the room has come
+                             if(r<ROOMS_PER_FLOOR - 1 && posR[r+1]==(int)j)
                                    {
                                     entityCount=0;
                                     r++;}  
@@ -170,6 +181,7 @@ bool loadBuildingMap(const char* filename,
                        }
                     }
 
+
                     return true;
 				}
                         
@@ -189,13 +201,17 @@ bool loadInitialState(const char* filename,
                         if (!file.is_open()) 
                             return false;
                          
-                        playerFloor = -1;
-                        playerRoom = -1;
+                       
                         energy=0;
                         time=0;
                         score=0;
                         inventoryCount=0;
                         emergencyTripsLeft=0;
+
+                        bool energyFound = false;
+                        bool timeFound = false;
+                        bool scoreFound = false;
+                        bool startRoomFound = false;
 
                         for (int i = 0; i < NUM_OBJECTIVES; i++) {
                             objectives[i] = 0;
@@ -206,259 +222,240 @@ bool loadInitialState(const char* filename,
                         }
 
                         string line;
-                        int pos;
+                        size_t pos;
                      
                         while(getline(file, line))
                         {
                                 string temp;
 
-                                pos=line.find("PLAYER_FLOOR: ");
-                                if(pos!=string::npos)
-                                {
-                                    temp = line.substr(pos+14);
-                                    if(temp!="PLAYER_SELECTS" && temp!="NONE" && temp!="NO")
-                                    {
-                                        playerFloor = stoi(temp);
-                                        if(playerFloor<0 || playerFloor>=NUM_FLOORS)
-                                            return false;
-                                    }
-                                }
 
-                                pos=line.find("PLAYER_ROOM: ");
-                                if(pos!=string::npos)
+                                pos = line.find("START_ROOM: ");
+                                if(pos != string::npos)
                                 {
-                                    temp = line.substr(pos+13);
-                                    if(temp!="PLAYER_SELECTS" && temp!="NONE" && temp!="NO")
-                                    {
-                                        playerRoom = stoi(temp);
-                                        if(playerRoom<0 || playerRoom>=ROOMS_PER_FLOOR)
-                                            return false;
-                                    }
-                                }
+                                   temp = line.substr(pos + 12);
+
+                                   if(temp != "PLAYER_SELECTS")
+                                     return false;
+
+                                    startRoomFound = true;
+}
+
 
                                 pos=line.find("INITIAL_ENERGY: ");
                                 if(pos!=string::npos)
                                 {
                                      temp = line.substr(pos+16);
-                                    if(temp!="PLAYER_SELECTS" && temp!="NONE" && temp!="NO")
-                                    {
-                                        energy = stoi(temp);
-                                        if(energy<0)
+                                   
+                                        if(!convertToInt(temp, energy))
                                             return false;
-                                    }
+
+                                        if(energy<0 || energy>MAX_ENERGY)
+                                            return false;
+                                        energyFound = true;
+                                    
                                 }
 
                                 pos=line.find("INITIAL_TIME: ");
                                 if(pos!=string::npos)
                                 {
-                                    temp = line.substr(pos+15);
-                                    if(temp!="PLAYER_SELECTS" && temp!="NONE" && temp!="NO")
-                                    {
-                                        time = stoi(temp);
-                                        if(time<0)
+                                    temp = line.substr(pos+14);
+                                  
+                                        if(!convertToInt(temp, time))
                                             return false;
-                                    }
+
+                                        if(time<0 || time>MAX_TIME)
+                                            return false;
+                                        timeFound = true;
                                 }
 
                                 pos=line.find("INITIAL_SCORE: ");
                                 if(pos!=string::npos)
                                 {
-                                    temp  = line.substr(pos+16);
-                                    if(temp!="PLAYER_SELECTS" && temp!="NONE" && temp!="NO")
-                                    {
-                                        score = stoi(temp);
+                                    temp  = line.substr(pos+15);
+                                    
+                                        if(!convertToInt(temp, score))
+                                            return false;
                                         if(score<0)
                                             return false;
-                                    }
+                                        scoreFound = true;
                                 }
 
                                 pos=line.find("PASSENGER_RESCUED: ");
                                 if(pos!=string::npos)
                                 {
                                     temp=line.substr(pos+19);
-                                    if(temp!="PLAYER_SELECTS" && temp!="NONE" && temp!="NO")
-                                     {
-                                        if(stoi(temp)<0)
-                                            return false;
-                                        
+                                     if(temp=="YES" )
+                                     {                                     
                                         objectives[OBJ_PASSENGER_RESCUED] = true;
                                      }
+
+                                     else if(temp=="NO" )
+                                     {
+                                        objectives[OBJ_PASSENGER_RESCUED] = false;
+                                     }
+                                    else
+                                    {
+                                        return false;
+                                    }
                                 }
                                 
                                 pos=line.find("CAT_RESCUED: ");
                                 if(pos!=string::npos)
                                 {
                                     temp=line.substr(pos+13);
-                                    if(temp!="PLAYER_SELECTS" && temp!="NONE" && temp!="NO")
-                                    {
-                                        if(stoi(temp)<0)
-                                            return false;
-                                        
+                                    if(temp=="YES" )
+                                    {                                    
                                         objectives[OBJ_CAT_SECURED] = true;
+                                    }
+
+                                    else if(temp=="NO" )
+                                    {
+                                        objectives[OBJ_CAT_SECURED] = false;
+                                    }
+                                    else
+                                    {
+                                        return false;
                                     }
                                 }
 
                                 pos=line.find("CLUES_COLLECTED: ");
                                 if(pos!=string::npos)
                                 {
-                                    pos=line.find("4");
-                                    if(pos!=string::npos)
+                                    temp = line.substr(pos + 17);
+
+                                    if(temp.find("4")!= string::npos)
                                     {
                                         objectives[OBJ_CLUE_4]=true;
                                     }
-
-                                    pos=line.find("7");
-                                    if(pos!=string::npos)
-                                    {
-                                        objectives[OBJ_CLUE_7]=true;
-                                    }
-
-                                    pos=line.find("2");
-                                    if(pos!=string::npos)
+                                    if(temp.find("2")!= string::npos)
                                     {
                                         objectives[OBJ_CLUE_2]=true;
+                                    }
+                                    if(temp.find("7")!= string::npos)
+                                    {
+                                        objectives[OBJ_CLUE_7]=true;
                                     }
                                 }
 
                                 pos=line.find("CABINET_UNLOCKED: ");
+                                if(pos!=string::npos)
+                                {
                                 temp=line.substr(pos+18);
-                                if(temp!="PLAYER_SELECTS" && temp!="NONE" && temp!="NO")
+                                if(temp=="YES" )
                                 {
-                                    if(stoi(temp)<0)
-                                    return false;
-
                                     objectives[OBJ_CABINET_UNLOCKED]=true;
-
                                 }
-
-
-                                pos=line.find("TRAIN_KEY_COLLECTED: ");
-                                temp=line.substr(pos+21);
-                                if(temp!="PLAYER_SELECTS" && temp!="NONE" && temp!="NO")
+                                else if(temp=="NO")
                                 {
-                                    if(stoi(temp)<0)
-                                    return false;
-
-                                    objectives[OBJ_TRAIN_KEY]=true;
-
+                                    objectives[OBJ_CABINET_UNLOCKED]=false;
                                 }
-
-
+                                else
+                                {
+                                    return false;
+                                }
                                 
-                                pos=line.find("FUSE_INSTALLED: ");
-                                temp=line.substr(pos+16);
-                                if(temp!="PLAYER_SELECTS" && temp!="NONE" && temp!="NO")
-                                {
-                                    if(stoi(temp)<0)
-                                    return false;
+                              }
 
-                                    objectives[OBJ_FUSE_INSTALLED]=true;
+ 
+                                pos=line.find("TRAIN_KEY_COLLECTED: ");
+                               if(pos!=string::npos)
+                                {
+                                temp=line.substr(pos+21);
+                                if(temp=="YES" )
+                                {
+                                    objectives[OBJ_TRAIN_KEY]=true;
+                                 }
+                                 else if(temp=="NO" )
+                                 {
+                                    objectives[OBJ_TRAIN_KEY]=false;
+                                 }
+                                 else
+                                 {
+                                     return false;
+                                 }
+
 
                                 }
 
-                                if(objectives[OBJ_FUSE_INSTALLED]==true)
+              
+                                pos=line.find("FUSE_INSTALLED: ");
+                                
+                                if(pos!=string::npos)
                                 {
-                                    pos=line.find("FUSE_COLLECTED: ");
-                                    temp=line.substr(pos+16);
-                                    if(temp!="PLAYER_SELECTS" && temp!="NONE" && temp!="NO")
-                                    {
-                                    if(stoi(temp)<0)
-                                    return false;
-
+                                temp=line.substr(pos+16);
+                                if(temp=="YES" )
+                                {
                                     objectives[OBJ_FUSE_INSTALLED]=true;
+                                }
+                                else if(temp=="NO" )
+                                {
+                                    objectives[OBJ_FUSE_INSTALLED]=false;
+                                }
+                                else 
+                                return false;
 
-                                    }
+                                }
 
 
                                 
                                 pos=line.find("LIFT_PASS_COLLECTED: ");
+                                if(pos!=string::npos)
+                                {
                                 temp=line.substr(pos+21);
-                                if(temp!="PLAYER_SELECTS" && temp!="NONE" && temp!="NO")
+                                if(temp=="YES" )
                                 {
-                                    if(stoi(temp)<0)
-                                    return false;
-
                                     objectives[OBJ_LIFT_PASS]=true;
-
                                 }
-
-
-                                
-                                pos=line.find("TRAIN_PREPARED: ");
-                                temp=line.substr(pos+16);
-                                if(temp!="PLAYER_SELECTS" && temp!="NONE" && temp!="NO")
+                                else if(temp=="NO" )
                                 {
-                                    if(stoi(temp)<0)
-                                    return false;
-
-                                    objectives[OBJ_TRAIN_PREPARED]=true;
-
+                                    objectives[OBJ_LIFT_PASS]=false;
                                 }
-
-
-                                
-                          /*      pos=line.find("PLAYER_AT_TRAIN: ");
-                                temp=line.substr(pos+17);
-                                if(temp!="PLAYER_SELECTS" && temp!="NONE" && temp!="NO")
-                                {
-                                    if(stoi(temp)<0)
-                                    return false;
-
-                                    objectives[OBJ_CABINET_UNLOCKED]=true;
-
-                                }*/
+                                else 
+                                return false;
+                                }
 
                             
-                            }
- 
-                            return true;      
+                                
+                                pos=line.find("TRAIN_PREPARED: ");
+                    
+                                if(pos!=string::npos)
+                                {
+                                    temp=line.substr(pos+16);
+                                if(temp=="YES" )
+                                {
+                                    objectives[OBJ_TRAIN_PREPARED]=true;
+                                }
+                                else if(temp=="NO" )
+                                {
+                                    objectives[OBJ_TRAIN_PREPARED]=false;
+                                }
 
-                              
+                                else
+                                {
+                                    return false;
+                                }
+                                }
+
+                            
+                            } 
+                            
+                            if(!energyFound || !timeFound || !scoreFound || !startRoomFound)
+                                return false;
+                           
                         
-                        }
+                        
 
+                         return true;
 
 
                       }
 
 
-bool validateStartingRoom(int startFloor, int startRoom,
-                          const char horizontalConn[NUM_FLOORS][ROOMS_PER_FLOOR - 1])
+bool validateStartingRoom(int startFloor, int startRoom)
                           {
-                            //initialize right and left connections to empty
-                            char connLeft=' ', connRight=' ';
-                              
-                            //reject out of bound starting floors and starting rooms
+         
                             if(startFloor<1 || startFloor>NUM_FLOORS || startRoom<1 || startRoom>ROOMS_PER_FLOOR)
                             return false;
-
-                             
-                            //vertical conditions, handled manualy?
-
-                            //lift 1 connects floor 1 and floor 2  and room 2 and room 3;
-                            if((startFloor==1 || startFloor==2) &&(startRoom==2 || startRoom==3))
-                                return true;
-
-                            //lift 2 connects floor 2, floor 4 and floor 5 and room 4 
-                           if((startFloor==2 ||startFloor==4 || startFloor==5) && startRoom==4)
-                                return true;
-
-
-                            //at room 1 in all floors, there is vertical connection through stairs  
-                            if(startRoom==1)
-                                return true;
-
-                            //left connections, not possible for room1
-                            if(startRoom>1)
-                            connLeft=horizontalConn[startFloor-1][startRoom-2];
-                            
-                            //right connections, not possible for room5
-                            if(startRoom<ROOMS_PER_FLOOR)
-                            connRight=horizontalConn[startFloor-1][startRoom-1];
-                           
-                            //check wether connections exist
-                           if((connRight==' ' || connRight=='#') && ( connLeft==' ' || connLeft=='#'))
-                           return false;
 
                             return true;
 
@@ -514,6 +511,9 @@ const char* getEntityName(char entitySymbol)
 
     if(entitySymbol=='&')
       return "Observation Token";
+
+
+return "Unknown Entity";
 
 
 

@@ -10,7 +10,7 @@ using namespace std;
 
 // File persistence for savegame.txt and game_summary.txt using primitive variables
 
-//created my own function for converting string to integer, convertToInt?
+//created my own function for converting string to integer, convertToInt?(to be moved to util.h)
 
 
 bool saveGameStateToFile(const char* filename,
@@ -841,6 +841,7 @@ bool loadGameStateFromFile(const char* filename,
                                     }
 
                                     //validate that entities are equal to entity counts
+                                    //2*(entityCounts[f-1][r-1]-1) includes spaces as weel as entity characters
                                     if(entityCounts[f-1][r-1]>0 && line.length()<=pos+10+2*(entityCounts[f-1][r-1]-1))
                                     {
                                         cout<<"Invalid entity data!"<<endl;

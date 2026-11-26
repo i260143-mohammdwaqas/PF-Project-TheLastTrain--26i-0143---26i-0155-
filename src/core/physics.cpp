@@ -4,9 +4,7 @@
 #include "switches.h"
 using namespace std;
 
-//canTraverse? emergencyTrip decrement, to be handled latter?
-//added myOwn functions isValidInventory ?
-// and isValidEntity, to check wether an an item in the inventory or entity is valid??
+//added myOwn functions isValidInventory and isValidEntity, to check wether an an item in the inventory or entity is valid??
 
 // Movement validation and resource adjustments without structures
 
@@ -19,7 +17,7 @@ bool isVerticallyConnected(int fromF, int fromR, int toF, int toR,
                             if((fromF==1 || fromF==2) && (toF==1 || toF==2) && fromR==1 && toR==1)
                             {
                                 outConnType='S';
-                                return true
+                                return true;
                             }
 
                             if((fromF==2 || fromF==3) && (toF==2 || toF==3) && fromR==1 && toR==1)
@@ -31,6 +29,7 @@ bool isVerticallyConnected(int fromF, int fromR, int toF, int toR,
                             if((fromF==4 || fromF==5) && (toF==4 || toF==5) && fromR==1 && toR==1)
                             {
                                 outConnType='S';
+                                return true;
                             }
 
                             //lifts
@@ -44,16 +43,15 @@ bool isVerticallyConnected(int fromF, int fromR, int toF, int toR,
                                     }
 
                             // Lift 2
-                        if(canUseLift2(fromF, toF, true, 0) && fromR == 4 && toR == 4)
-                         {
+                            //we set true for operational and 0 for emergency trips left, because we are only checking the connection here, not the traversibility
+                            if(canUseLift2(fromF, toF, true, 0) && fromR == 4 && toR == 4)
+                           {
                             outConnType = '2';
                             return true;
-                        }
+                           }
 
 
                             return false;
-
-
                   }
 
 
@@ -86,23 +84,23 @@ bool isDirectlyConnected(int fromF, int fromR, int toF, int toR,
                                 //if to room is greater than from room
                                 else if(toR==fromR-1)
                                 outConnType=horizontalConn[fromF-1][toR-1];
+
                                 
                                 //if rooms are not adjacent, while being on the same floor return false 
                                 else 
                                 return false;
 
+                                 if(outConnType==' ' || outConnType=='#')
+                                 return false;
+
                             }
 
                             //check if the rooms are vertically connected, if yes set the outConnType accordingly                   
-                            if(isVerticallyConnected(fromF, fromR, toF, toR, outConnType))
+                           else 
                             {
-                                return true;
+                                return isVerticallyConnected(fromF, fromR, toF, toR, outConnType);
                             }
 
-
-
-                            if(outConnType==' ' || outConnType=='#')
-                                 return false;
 
                             return true;
 
@@ -124,15 +122,12 @@ bool canTraverse(int targetFloor, int targetRoom, char connType,
                     if(connType=='L')
                     {
                         //see if the player has master key, if yes return true
-                        if(hasItem(inventory, inventoryCount, ENT_MASTER_KEY))
+                        if(unlockFloor3Door(inventory, inventoryCount))
                         return true;
 
-                        //if no master key, return false, because bw adjacent rooms there is no other way
-                        else 
-                        {
+                        //if no master key, return false, because bw adjacent rooms there is no other way                    
                         cout<<"Master Key is required to traverse the locked door!"<<endl;
                         return false;
-                        }
                     }
 
                     //if connType is l2 check if lift is operational, if yes then return true;
@@ -162,9 +157,9 @@ void applyResourceDelta(int& energy, int& time, int deltaEnergy, int deltaTime)
     //add change in time to update time value;
     time+= deltaTime;
 
-    //clamp energy and time values to ensure, they remain within range;
-  clampInt(energy, 0, MAX_ENERGY);
-  clampInt(time, 0, MAX_TIME);
+  //clamp energy and time values to ensure, they remain within range;
+  energy=clampInt(energy, 0, MAX_ENERGY);
+  time=clampInt(time, 0, MAX_TIME);
 
 
 }
@@ -217,6 +212,12 @@ bool isValidEntity(char itemSymbol)
 
 bool hasItem(const char inventory[MAX_INVENTORY_CAPACITY], int inventoryCount, char itemSymbol)
 {
+    //vlidate
+    if(inventoryCount < 0 || inventoryCount > MAX_INVENTORY_CAPACITY)
+    {
+    cout<<"Invalid inventory count!"<<endl;
+    return false;
+    }
     //check if the item is presnt in the the inventory, if yes return true;
     for(int i=0; i<inventoryCount; i++)
     if(inventory[i]==itemSymbol)
@@ -233,7 +234,7 @@ bool hasItem(const char inventory[MAX_INVENTORY_CAPACITY], int inventoryCount, c
 bool addItem(char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount, char itemSymbol)
 {
     //if the inventories are alredy full or out of bound return false
-    if(inventoryCount>=MAX_INVENTORY_CAPACITY)
+    if(inventoryCount>=MAX_INVENTORY_CAPACITY || inventoryCount<0)
     {cout<<"Inventory is Full, Collection failed!"<<endl;
     return false;}
 
@@ -253,6 +254,12 @@ bool addItem(char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount, char i
 bool removeItem(char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount, char itemSymbol)
 {
     int index=-1;
+
+    if(inventoryCount < 0 || inventoryCount > MAX_INVENTORY_CAPACITY)
+    {
+    cout<<"Invalid inventory count!"<<endl;
+    return false;
+    }
 
     //search for that symbol
     for(int i=0; i<inventoryCount; i++)

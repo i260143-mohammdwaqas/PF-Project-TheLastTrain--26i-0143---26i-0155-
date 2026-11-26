@@ -4,6 +4,10 @@
 #include "state.h"
 
 // Movement validation, connectivity & resource adjustments
+bool isVerticallyConnected(int fromF, int fromR, int toF, int toR,
+                           char& outConnType);
+
+                           
 bool isDirectlyConnected(int fromF, int fromR, int toF, int toR,
                          const char horizontalConn[NUM_FLOORS][ROOMS_PER_FLOOR - 1],
                          char& outConnType);

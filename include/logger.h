@@ -2,6 +2,7 @@
 #define LOGGER_H
 
 #include "state.h"
+#include <string>
 
 // State Persistence using primitive variables
 bool saveGameStateToFile(const char* filename,
@@ -20,7 +21,7 @@ bool loadGameStateFromFile(const char* filename,
                            char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
                            int entityCounts[NUM_FLOORS][ROOMS_PER_FLOOR]);
 
-bool convertToInt(const string& str, int& value);
+bool convertToInt(const std::string& str, int& value);
 
 void writeGameSummaryReport(const char* filename,
                             int score, int remainingEnergy, int remainingTime,

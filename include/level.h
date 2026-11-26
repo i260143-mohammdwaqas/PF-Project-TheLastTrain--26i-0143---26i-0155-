@@ -15,8 +15,7 @@ bool loadInitialState(const char* filename,
                       char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount,
                       bool objectives[NUM_OBJECTIVES], int& emergencyTripsLeft);
 
-bool validateStartingRoom(int startFloor, int startRoom,
-                          const char horizontalConn[NUM_FLOORS][ROOMS_PER_FLOOR - 1]);
+bool validateStartingRoom(int startFloor, int startRoom);
 
 const char* getEntityName(char entitySymbol);
 
