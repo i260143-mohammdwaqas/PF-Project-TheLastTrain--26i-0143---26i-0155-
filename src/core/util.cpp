@@ -32,13 +32,11 @@ bool stringEquals(const char* a, const char* b)
 
 void printHeader(const char* title)
 {
-    void printHeader();
-{
     cout << "============================================\n";
     cout << "              THE LAST TRAIN                \n";
     cout << "============================================\n";
     cout << endl;
-}
+
 }
 
 void clearScreen()

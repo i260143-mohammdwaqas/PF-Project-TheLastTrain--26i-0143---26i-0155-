@@ -224,6 +224,8 @@ bool convertToInt(const string& str, int& value)
     {
         value=stoi(str, &pos);
 
+        //after finding pos we check whether the psotion + the remainign whitespaces is equal to the length of the string, if not then it means there are some non-whitespace characters after the integer, which means the string is not a valid integer
+        //we use isspace to check for whitespace characters
         // the loop continues until it encounters a non-whitespace character or reaches the end of the string
         while(pos<str.length() && isspace(static_cast<unsigned char>(str[pos])))
         {
