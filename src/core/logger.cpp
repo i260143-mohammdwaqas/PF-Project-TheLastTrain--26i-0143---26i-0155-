@@ -347,6 +347,13 @@ bool loadGameStateFromFile(const char* filename,
                             //read ech line of the file
                             while(getline(file, line))
                             {
+                                //validate the line length, if it is greater than the max line length, return false
+                                if(line.length()>=MAX_LINE_LEN)
+                                {
+                                    cout<<"Line too long!"<<endl;
+                                    return false;
+                                }
+
                                 //search for keyWords
 
                                 //search for floor and room

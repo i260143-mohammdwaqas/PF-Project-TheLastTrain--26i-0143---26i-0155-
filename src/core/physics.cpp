@@ -231,6 +231,12 @@ bool hasItem(const char inventory[MAX_INVENTORY_CAPACITY], int inventoryCount, c
 
 bool addItem(char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount, char itemSymbol)
 {
+    //check if the item symbol is valid, if not return false
+    if(!isValidInventory(itemSymbol))
+    {
+        cout<<"Invalid inventory item!"<<endl;
+        return false;
+    }
     //if the inventories are alredy full or out of bound return false
     if(inventoryCount>=MAX_INVENTORY_CAPACITY || inventoryCount<0)
     {cout<<"Inventory is Full, Collection failed!"<<endl;

@@ -278,6 +278,7 @@ void runSimulation(int& playerFloor, int& playerRoom,
                             cout << "\nPress Enter to continue...";
                             cin.ignore(1000, '\n');
                             cin.get();
+                            break;
 
 
                         }
@@ -386,6 +387,7 @@ bool handleMoveCommand(int targetFloor, int targetRoom,
                       currentRoom=targetRoom;
 
 
+                      cout<<"Player moved to Floor "<<currentFloor<<", Room "<<currentRoom<<" successfully!"<<endl;
                       return true;
 
                 }

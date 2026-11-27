@@ -29,7 +29,14 @@ bool loadBuildingMap(const char* filename,
 
                         //read the line one at a time and store it in a string array
                         while(lines<100 && getline(file, line[lines]))
-                        lines++;
+                        {
+                            if(line[lines].length()>=MAX_LINE_LEN)
+                            {
+                                cout<<"Line too long!"<<endl;
+                                return false;
+                            }
+                            lines++;
+                        }
 
 
 

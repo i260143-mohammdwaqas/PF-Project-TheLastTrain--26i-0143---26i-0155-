@@ -29,10 +29,10 @@ bool verifyCabinetCode(const char* enteredCode, const bool objectives[NUM_OBJECT
 {
     if ((enteredCode == nullptr)||(objectives[OBJ_CLUE_2] == false)||(objectives[OBJ_CLUE_4] == false)||(objectives[OBJ_CLUE_7] == false))
     return false;
-    if(enteredCode[0]=='4' && enteredCode[1]=='2' && enteredCode[2]=='7'&& enteredCode[3]=='\0' ){
-        return true;
-    }
-    return false; 
+   if(!stringEquals(enteredCode, "427"))
+    return false;
+   
+    return true;
     
 }
 

@@ -112,7 +112,7 @@ int main()
                   inventory, inventoryCount, objectives, emergencyTripsLeft,
                   horizontalConn, roomEntities, entityCounts);
                  
-                 
+                 if(objectives[OBJ_MISSION_WON] || objectives[OBJ_MISSION_FAILED])
                     writeGameSummaryReport(GAME_SUMMARY_FILE_NAME, score, energy, time, objectives, objectives[OBJ_MISSION_WON]);
                  
 
