@@ -21,7 +21,7 @@ int clampInt(int val, int minVal, int maxVal)
 void trimWhitespace(char* str)
 {
     
-    // Implementation for trimming whitespacea
+    // Implementation for trimming whitespace
 }
 
 bool stringEquals(const char* a, const char* b)
@@ -32,13 +32,12 @@ bool stringEquals(const char* a, const char* b)
 
 void printHeader(const char* title)
 {
-    void printHeader();
-{
+
     cout << "============================================\n";
     cout << "              THE LAST TRAIN                \n";
     cout << "============================================\n";
     cout << endl;
-}
+
 }
 
 void clearScreen()
