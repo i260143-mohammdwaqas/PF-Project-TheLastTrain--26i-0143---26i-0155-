@@ -50,7 +50,7 @@ bool loadBuildingMap(const char* filename,
                         }
 
 
-                        int posR[ROOMS_PER_FLOOR];
+                        size_t posR[ROOMS_PER_FLOOR];
                         bool positionsfound=false;
 
                         //calculating Floor positions, helps in claculating room positions for entities
@@ -131,7 +131,7 @@ bool loadBuildingMap(const char* filename,
                                       && (line[i][j + 1] == '1'))
                                      {
                                         horizontalConn[f][R]=' ';
-                                        R++;
+                                         R++;
                                          j++;
                                       }
 
@@ -158,7 +158,7 @@ bool loadBuildingMap(const char* filename,
                             for(size_t j=0; j<line[i].length(); j++)
                             {
                             //check if end of the room has come
-                             if(r<ROOMS_PER_FLOOR - 1 && posR[r+1]==(int)j)
+                             if(r<ROOMS_PER_FLOOR - 1 && posR[r+1]==j)
                                    {
                                     entityCount=0;
                                     r++;}  
@@ -200,7 +200,8 @@ bool loadInitialState(const char* filename,
                         if (!file.is_open()) 
                             return false;
                          
-                       
+                        playerFloor=0;
+                        playerRoom=0;
                         energy=0;
                         time=0;
                         score=0;
@@ -464,52 +465,52 @@ bool validateStartingRoom(int startFloor, int startRoom)
 const char* getEntityName(char entitySymbol)
 {
     if(entitySymbol=='<')
-      return "Master Key (\"<\")";
+      return "Master Key ( \"<\" )";
 
     if(entitySymbol==')')
-      return "Energy Pack (\")\") ";
+      return "Energy Pack ( \")\" ) ";
 
     if(entitySymbol=='\\')
-      return "Emergency Toolkit (\"<\")";
+      return "Emergency Toolkit ( \"\\\" )";
     
     if(entitySymbol=='4')
-      return "Clue Digit (\"4\")";
+      return "Clue Digit ( \"4\" )";
 
     if(entitySymbol=='*')
-      return "Fuse (\"*\")";
+      return "Fuse ( \"*\" )";
 
     if(entitySymbol=='~')
-      return "Cat (\"~\")";
+      return "Cat ( \"~\" )";
     
     if(entitySymbol==';')
-      return "Control Panel (\";\")";
+      return "Control Panel ( \";\" )";
         
     if(entitySymbol=='(')
-      return "Lift Pass (\"'\")";
+      return "Lift Pass ( \"(\" )";
     
     if(entitySymbol=='!')
-      return "Passenger (\"!\")";
+      return "Passenger ( \"!\" )";
     
     if(entitySymbol=='%')
-      return "Medical Kit (\"%\")";
+      return "Medical Kit ( \"%\" )";
     
     if(entitySymbol=='$')
-      return "Emergency Access Card (\"$\")";
+      return "Emergency Access Card ( \"$\" )";
 
     if(entitySymbol=='2')
-      return "Clue Digit (\"2\")";
+      return "Clue Digit ( \"2\" )";
     
     if(entitySymbol=='7')
-      return "Clue Digit (\"7\")";
+      return "Clue Digit ( \"7\" )";
 
     if(entitySymbol=='^')
-      return "Cabinet / Train Key (\"^\")";
+      return "Cabinet / Train Key ( \"^\" )";
 
     if(entitySymbol=='@')
-      return "Cat Carrier (\"@\")";
+      return "Cat Carrier ( \"@\" )";
 
     if(entitySymbol=='&')
-      return "Observation Token (\"&\")";
+      return "Observation Token ( \"&\" )";
 
 
 return "Unknown Entity";

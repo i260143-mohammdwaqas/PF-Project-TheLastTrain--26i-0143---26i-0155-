@@ -59,12 +59,6 @@ void runSimulation(int& playerFloor, int& playerRoom,
                         
                         if(!(cin>>command))
                         {
-                            if(cin.eof())
-                            {
-                            gameRunning = false;
-                            break;
-                            }
-
                             cout<<"Invalid input for command!"<<endl;
                             cin.clear();
                             cin.ignore(1000, '\n');
@@ -277,7 +271,17 @@ void runSimulation(int& playerFloor, int& playerRoom,
                             gameRunning=false;
                             break;
 
+                            default:
+                            cout<<"Invalid Command!"<<endl;
+
+                            //add a puase
+                            cout << "\nPress Enter to continue...";
+                            cin.ignore(1000, '\n');
+                            cin.get();
+
+
                         }
+
 
                         if(command!='Q' && checkEndConditions(energy, time, score, objectives))
                             gameRunning=false;
@@ -359,7 +363,7 @@ bool handleMoveCommand(int targetFloor, int targetRoom,
 
 
                         //then check despit the connection, does the user has tools to traverse
-                        if(!canTraverse(targetFloor, targetRoom, ConnType, inventory, inventoryCount, emergencyTripsLeft, lift2Operational))
+                        if(!canTraverse(ConnType, inventory, inventoryCount, emergencyTripsLeft, lift2Operational))
                         {
                             cout<<"path not traversible, Movement Failed!"<<endl;
                             return false;

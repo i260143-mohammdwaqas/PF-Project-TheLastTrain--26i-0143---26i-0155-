@@ -110,11 +110,10 @@ bool isDirectlyConnected(int fromF, int fromR, int toF, int toR,
 
 
 
-bool canTraverse(int targetFloor, int targetRoom, char connType,
-                 const char inventory[MAX_INVENTORY_CAPACITY], int inventoryCount,
+bool canTraverse(char connType, const char inventory[MAX_INVENTORY_CAPACITY], int inventoryCount,
                  int emergencyTripsLeft, bool lift2Operational)
                  {
-                    //target floor and target room?
+                    
                     //door and windows are always traversible
                     if (connType== 'D' || connType== 'W' || connType== 'S' || connType == '1')
                         return true;

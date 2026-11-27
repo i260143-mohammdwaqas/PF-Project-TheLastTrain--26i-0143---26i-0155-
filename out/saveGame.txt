@@ -1,0 +1,114 @@
+     Coordinates
+Player's Floor: 3
+Player's Room: 2
+
+Energy: 100
+Score: 0
+Time: 50
+
+
+Inventory Count: 0
+Inventory: 
+
+Emergency Trips Left: 0
+
+    Objective Flags
+Master Key: 0
+Cabinet Unlocked: 0
+Cat Carrier: 0
+Cat Secured: 0
+Clue Digit 2: 0
+Clue Digit 4: 0
+Clue Digit 7: 0
+Fuse Collected: 0
+Fuse Installed: 0
+Lift 2 Active: 0
+Lift Pass: 0
+Mission Failed: 0
+Mission Won: 0
+Passenger Rescued: 0
+Train Key: 0
+Train Prepared: 0
+
+    Room Entities
+
+Floor: 1
+Room: 1
+Entity Count: 0
+Entities: 
+Floor: 1
+Room: 2
+Entity Count: 1
+Entities: < 
+Floor: 1
+Room: 3
+Entity Count: 0
+Entities: 
+Floor: 1
+Room: 4
+Entity Count: 2
+Entities: ) ) 
+Floor: 2
+Room: 1
+Entity Count: 0
+Entities: 
+Floor: 2
+Room: 2
+Entity Count: 0
+Entities: 
+Floor: 2
+Room: 3
+Entity Count: 1
+Entities: \ 
+Floor: 2
+Room: 4
+Entity Count: 0
+Entities: 
+Floor: 3
+Room: 1
+Entity Count: 0
+Entities: 
+Floor: 3
+Room: 2
+Entity Count: 2
+Entities: 4 * 
+Floor: 3
+Room: 3
+Entity Count: 1
+Entities: ~ 
+Floor: 3
+Room: 4
+Entity Count: 2
+Entities: ; ( 
+Floor: 4
+Room: 1
+Entity Count: 1
+Entities: ! 
+Floor: 4
+Room: 2
+Entity Count: 2
+Entities: % $ 
+Floor: 4
+Room: 3
+Entity Count: 1
+Entities: 2 
+Floor: 4
+Room: 4
+Entity Count: 0
+Entities: 
+Floor: 5
+Room: 1
+Entity Count: 2
+Entities: 7 ^ 
+Floor: 5
+Room: 2
+Entity Count: 0
+Entities: 
+Floor: 5
+Room: 3
+Entity Count: 1
+Entities: @ 
+Floor: 5
+Room: 4
+Entity Count: 1
+Entities: & 
