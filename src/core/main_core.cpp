@@ -41,7 +41,11 @@ int main()
     std::cout << "R. Resume Game\n";
     std::cout << "Q. Quit\n";
     std::cout << "Select an option: ";
-    std::cin >> choice;
+    if(!(cin >> choice))
+    {
+        std::cerr << "Invalid input. Exiting.\n";
+        return 1;
+    }
 
     // Convert lowercase to uppercase
     if (choice >= 'a' && choice <= 'z')
@@ -57,14 +61,22 @@ int main()
         }
 
         cout << "\nSelect your starting floor (1-" << NUM_FLOORS << "): ";
-        cin >> playerFloor;
+        if(!(cin >> playerFloor))
+        {
+            std::cerr << "Invalid input for floor. Exiting.\n";
+            return 1;
+        }
 
         cout << "Select your starting room (1-" << ROOMS_PER_FLOOR << "): ";
-        cin >> playerRoom;
+        if(!(cin >> playerRoom))
+        {
+            std::cerr << "Invalid input for room. Exiting.\n";
+            return 1;
+        }
 
         if (!validateStartingRoom(playerFloor, playerRoom))
         {
-            cout << "Invalid starting position!" << endl;
+            cout << "Invalid starting position. Exiting" << endl;
             return 1;
         }
     }
@@ -99,9 +111,10 @@ int main()
     runSimulation(playerFloor, playerRoom, energy, time, score,
                   inventory, inventoryCount, objectives, emergencyTripsLeft,
                   horizontalConn, roomEntities, entityCounts);
+                 
                   if(objectives[OBJ_MISSION_WON] || objectives[OBJ_MISSION_FAILED])
                   {
-                    writeGameSummaryReport("data/game_summary.txt", score, energy, time, objectives, objectives[OBJ_MISSION_WON]);
+                    writeGameSummaryReport(GAME_SUMMARY_FILE_NAME, score, energy, time, objectives, objectives[OBJ_MISSION_WON]);
                   }
 
     return 0;

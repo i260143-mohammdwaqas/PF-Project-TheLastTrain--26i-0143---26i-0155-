@@ -56,7 +56,24 @@ void runSimulation(int& playerFloor, int& playerRoom,
 
                          //take input from the user for next command;
                         cout<<"\nEnter command (M=move, I=inspect, C=collect an item, U=use, X=unlock cabinet, S=save, H=help, Q=quit): ";
-                        cin>>command;
+                        
+                        if(!(cin>>command))
+                        {
+                            if(cin.eof())
+                            {
+                            gameRunning = false;
+                            break;
+                            }
+
+                            cout<<"Invalid input for command!"<<endl;
+                            cin.clear();
+                            cin.ignore(1000, '\n');
+
+                            cout << "\nPress Enter to continue...";
+                            cin.get();
+
+                            continue;
+                        }
 
                         //convert the lowercase input commands to uppercase for coneveninece
                         if(command>='a' && command<='z')
@@ -81,10 +98,28 @@ void runSimulation(int& playerFloor, int& playerRoom,
                             //handle movemment command
                             case 'M':
                             cout<<"Enter the target Floor and Room: ";
-                            cin>>targetFloor>>targetRoom;
-                           
+                         
+
+                            if(!(cin>>targetFloor>>targetRoom))
+                            {
+                                cout<<"Invalid input for floor and room!"<<endl;
+                                cin.clear();
+                                cin.ignore(1000, '\n');
+
+                                cout << "\nPress Enter to continue...";
+                                cin.get();
+
+                                break;
+                            }
+                          
+
                             //call the handle movemnet function
                             handleMoveCommand(targetFloor, targetRoom, playerFloor, playerRoom, energy, time, horizontalConn, inventory, inventoryCount, emergencyTripsLeft, objectives[OBJ_LIFT2_ACTIVE]);
+
+                            //add a pause after inspection, so that the user can read the output before the screen is cleared
+                            cout << "\nPress Enter to continue...";
+                            cin.ignore(1000, '\n');
+                            cin.get();
 
                             break;
 
@@ -93,6 +128,12 @@ void runSimulation(int& playerFloor, int& playerRoom,
                             //call the fucntion to handle inspection command
                             handleInspectCommand(playerFloor, playerRoom,
                             energy, time, roomEntities,entityCounts[playerFloor-1][playerRoom-1], objectives,score);
+
+                            //add a pause after inspection, so that the user can read the output before the screen is cleared
+                            cout << "\nPress Enter to continue...";
+                            cin.ignore(1000, '\n');
+                            cin.get();
+
                             break;
 
 
@@ -100,10 +141,27 @@ void runSimulation(int& playerFloor, int& playerRoom,
                             case 'C':
                             //user choses the item to collect;
                             cout<<"Enter the item symbol to collect: ";
-                            cin>>symbol;  
+                          
+
+                            if(!(cin>>symbol))
+                            {
+                                cout<<"Invalid input for item symbol!"<<endl;
+                                cin.clear();
+                                cin.ignore(1000, '\n');
+
+                                cout << "\nPress Enter to continue...";
+                                cin.get();
+
+                                break;
+                            }
 
                             //call the funtion to handle collection command
-                            handleCollectCommand(symbol, playerFloor, playerRoom, energy, time, score, roomEntities, entityCounts[playerFloor-1][playerRoom-1], inventory, inventoryCount, objectives);
+                            handleCollectCommand(symbol, playerFloor, playerRoom, energy, time, score, emergencyTripsLeft, roomEntities, entityCounts[playerFloor-1][playerRoom-1], inventory, inventoryCount, objectives);
+                           
+                            cout << "\nPress Enter to continue...";
+                            cin.ignore(1000, '\n');
+                            cin.get();
+
                             break;
 
 
@@ -111,10 +169,28 @@ void runSimulation(int& playerFloor, int& playerRoom,
                             case 'U':
                             //user choses the item to use;
                             cout<<"Enter the item symbol to use: ";
-                            cin>>symbol;
+                            
+                            if(!(cin>>symbol))
+                            {
+                                cout<<"Invalid input for item symbol!"<<endl;
+                                cin.clear();
+
+                                cin.ignore(1000, '\n');
+                                cout << "\nPress Enter to continue...";
+                                cin.get();
+
+                                break;
+                            }
+
+
 
                             //call the function to handle use command
                             handleUseCommand(symbol, playerFloor, playerRoom, energy, time, score, inventory, inventoryCount, objectives);
+                            
+                            cout << "\nPress Enter to continue...";
+                            cin.ignore(1000, '\n');
+                            cin.get();
+
                             break;
 
 
@@ -145,8 +221,12 @@ void runSimulation(int& playerFloor, int& playerRoom,
                             //call the function to handle unlock cabinet command
                            else
                             {
-                                handleUnlockCabinetCommand(&code[0], playerFloor, playerRoom, objectives, score, roomEntities,entityCounts[playerFloor-1][playerRoom-1]);                            
+                                handleUnlockCabinetCommand(&code[0], playerFloor, playerRoom, objectives, score);                            
                             }
+                            
+                            cout << "\nPress Enter to continue...";
+                            cin.ignore(1000, '\n');
+                            cin.get();
 
                             break;
                             }
@@ -184,6 +264,12 @@ void runSimulation(int& playerFloor, int& playerRoom,
                             cout<<"S: Save the current game state"<<endl;
                             cout<<"H: Show this help menu"<<endl;
                             cout<<"Q: Quit the game"<<endl;
+
+                            //add a pause
+                            cout << "\nPress Enter to continue...";
+                            cin.ignore(1000, '\n');
+                            cin.get();
+
                             break;
 
                             //quits the game;
@@ -289,10 +375,12 @@ bool handleMoveCommand(int targetFloor, int targetRoom,
                             emergencyTripsLeft--;
                         }
                         
+        
                           
                       //after all the processes, update the room and floor
                       currentFloor=targetFloor;
                       currentRoom=targetRoom;
+
 
                       return true;
 
@@ -338,19 +426,19 @@ bool handleInspectCommand(int currentFloor, int currentRoom,
                             if(roomEntities[currentFloor-1][currentRoom-1][i]=='4' && !objectives[OBJ_CLUE_4])
                             {
                                 objectives[OBJ_CLUE_4]=true;
-                                deltaScore=SCORE_CLUE_FOUND;
+                                deltaScore+=SCORE_CLUE_FOUND;
                             }
 
                             if(roomEntities[currentFloor-1][currentRoom-1][i]=='2'  && !objectives[OBJ_CLUE_2])
                             {
                                 objectives[OBJ_CLUE_2]=true;
-                                deltaScore=SCORE_CLUE_FOUND;
+                                deltaScore+=SCORE_CLUE_FOUND;
                             }
 
                             if(roomEntities[currentFloor-1][currentRoom-1][i]=='7' && !objectives[OBJ_CLUE_7])
                             {
                                 objectives[OBJ_CLUE_7]=true;
-                                deltaScore=SCORE_CLUE_FOUND;
+                                deltaScore+=SCORE_CLUE_FOUND;
                             }
                           
                             }
@@ -372,7 +460,7 @@ bool handleInspectCommand(int currentFloor, int currentRoom,
 
 
 bool handleCollectCommand(char itemSymbol, int currentFloor, int currentRoom,
-                          int& energy, int& time, int& score,
+                          int& energy, int& time, int& score,int& emergencyTripsLeft,
                           char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
                           int& entityCount,
                           char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount,
@@ -499,6 +587,9 @@ bool handleCollectCommand(char itemSymbol, int currentFloor, int currentRoom,
                             if(itemSymbol==ENT_MASTER_KEY)
                                 objectives[OBJ_MASTER_KEY]=true;
 
+                            if(itemSymbol==ENT_EMERGENCY_CARD)
+                                emergencyTripsLeft=3;
+
                             if(itemSymbol==ENT_FUSE)
                                 objectives[OBJ_FUSE_COLLECTED]=true;
 
@@ -617,7 +708,11 @@ bool handleUseCommand(char itemSymbol, int currentFloor, int currentRoom,
                             }
 
                             //remove the medical kit from the inventory
-                            removeItem(inventory, inventoryCount, itemSymbol);
+                             if(!removeItem(inventory, inventoryCount, itemSymbol))
+                           {
+                                cout << "Failed to remove item from inventory!" << endl;
+                                return false;
+                            } 
 
                             //set the OBJ_PASSENGER_RESCUED true
                             objectives[OBJ_PASSENGER_RESCUED]=true;
@@ -646,7 +741,11 @@ bool handleUseCommand(char itemSymbol, int currentFloor, int currentRoom,
                             }
 
                             //remove the cat carrier from the inventory
-                            removeItem(inventory, inventoryCount, itemSymbol);
+                            if(!removeItem(inventory, inventoryCount, itemSymbol))
+                           {
+                                cout << "Failed to remove item from inventory!" << endl;
+                                return false;
+                            } 
 
                             //set objectives[OBJ_CAT_SECURED]=true;
                             objectives[OBJ_CAT_SECURED]=true;
@@ -696,9 +795,7 @@ bool handleUseCommand(char itemSymbol, int currentFloor, int currentRoom,
 
 
 bool handleUnlockCabinetCommand(const char* code, int currentFloor, int currentRoom,
-                                bool objectives[NUM_OBJECTIVES], int& score,
-                                char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
-                                int& entityCount)
+                                bool objectives[NUM_OBJECTIVES], int& score)
                                 {
                                     //check if the player is at required location
                                     if(currentFloor!=5 || currentRoom!=1)
@@ -718,6 +815,9 @@ bool handleUnlockCabinetCommand(const char* code, int currentFloor, int currentR
 
                                      //update score
                                      applyScoreDelta(score, SCORE_CABINET_UNLOCK);
+
+                                     
+                                    cout<<"Cabinet unlocked successfully!"<<endl;
 
                                      return true;
 

@@ -111,7 +111,7 @@ bool saveGameStateToFile(const char* filename,
                             }
 
                             //validate resources
-                            if(energy<0 || energy>MAX_ENERGY || time<0 || time>MAX_TIME || score<0)
+                            if(energy<0 || energy>MAX_ENERGY || time<0 || time>MAX_TIME || score<0 || score>MAX_SCORE)
                             {
                                 cout<<"Invalid resources!"<<endl;
                                 return false;
@@ -224,8 +224,8 @@ bool convertToInt(const string& str, int& value)
     {
         value=stoi(str, &pos);
 
-        // whitespace sre counted as well
-        while(pos<str.length() && isspace(str[pos]))
+        // the loop continues until it encounters a non-whitespace character or reaches the end of the string
+        while(pos<str.length() && isspace(static_cast<unsigned char>(str[pos])))
         {
             pos++;
         }
@@ -891,7 +891,7 @@ bool loadGameStateFromFile(const char* filename,
                             }
 
                             //validate score
-                            if(score<0)
+                            if(score<0 || score>MAX_SCORE)
                             {
                                 cout<<"Invalid score!"<<endl;
                                 return false;
@@ -949,7 +949,7 @@ void writeGameSummaryReport(const char* filename,
                             const bool objectives[NUM_OBJECTIVES], bool victory)
                             {
                                 //check if resources and other variables contain correct values
-                                if(score<0 || remainingEnergy<0 || remainingEnergy>MAX_ENERGY || remainingTime<0 || remainingTime>MAX_TIME)
+                                if(score<0 || score> MAX_SCORE || remainingEnergy<0 || remainingEnergy>MAX_ENERGY || remainingTime<0 || remainingTime>MAX_TIME)
                                 {
                                     cout<<"Report could not be written, Invalid data!"<<endl;
                                     return;

@@ -172,8 +172,7 @@ void applyScoreDelta(int& score, int deltaScore)
     score+= deltaScore;
 
     //clamp score value to ensure, it remains within range;
-    if(score<0)
-    score=0;
+    score=clampInt(score, 0, MAX_SCORE);
 
 }
 

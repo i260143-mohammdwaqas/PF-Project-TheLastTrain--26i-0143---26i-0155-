@@ -2,8 +2,8 @@
 #define CONFIG_H
 
 //File names
-const char* SAVE_FILE_NAME = "data/savegame.txt";
-
+const char* const SAVE_FILE_NAME = "out/saveGame.txt";
+const char* const GAME_SUMMARY_FILE_NAME = "out/gameSummary.txt";
 // --- Facility & Grid Constants ---
 const int NUM_FLOORS = 5;
 const int ROOMS_PER_FLOOR = 4;

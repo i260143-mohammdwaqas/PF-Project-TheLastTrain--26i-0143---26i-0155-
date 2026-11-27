@@ -12,7 +12,10 @@ void renderRoomDetails(int floor, int room,
                        const char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
                        int entityCount);
 
-void renderAsciiBuilding(int playerFloor, int playerRoom);
+void renderAsciiBuilding(int playerFloor, int playerRoom,
+                         const char horizontalConn[NUM_FLOORS][ROOMS_PER_FLOOR - 1],
+                         const char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
+                         const int entityCounts[NUM_FLOORS][ROOMS_PER_FLOOR]);
 void renderObjectivesChecklist(const bool objectives[NUM_OBJECTIVES]);
 
 #endif // VIEWER_IFACE_H

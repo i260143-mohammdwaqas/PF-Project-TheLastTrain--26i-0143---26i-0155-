@@ -8,7 +8,7 @@ using namespace std;
 
 // Modular implementation using primitive arrays for map parsing and verification
 
-//starting room?
+//horizental conn issue
 
 
 
@@ -16,8 +16,7 @@ bool loadBuildingMap(const char* filename,
                      char horizontalConn[NUM_FLOORS][ROOMS_PER_FLOOR - 1],
                      char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
                      int entityCounts[NUM_FLOORS][ROOMS_PER_FLOOR])
-                  {
-
+                   {
                         ifstream file(filename);
 
                         //file validation
@@ -113,39 +112,39 @@ bool loadBuildingMap(const char* filename,
                                   if(f<0 || f>=NUM_FLOORS)
                                     return false;    
 
-                               //R stores the room number
+                            //R stores the room number
 
-                               int R = 0;
+                            int R = 0;
 
                             //storing room connections in the horizontalConn array
-                            for(size_t j = 0; j < line[i].length(); j++)
+                            //room boundaries exclude lift 2 but we need to accout for lift 1
+                            for(size_t j = posR[0]; j<posR[ROOMS_PER_FLOOR - 1]; j++)
                             {
                                 if(line[i][j] == 'W' || line[i][j] == 'D' ||
                                     line[i][j] == '#' || line[i][j] == 'L')
                                     {
-                                    if(R >= ROOMS_PER_FLOOR - 1)
-                                     return false;
 
 
-                                    //j++ ensures that next charater is skipped if it is L1 or L2
+                                    //j++ ensures that next charater is skipped if it is L1 
                                      
                                     if(line[i][j] == 'L' && j + 1 < line[i].length()
-                                      && line[i][j + 1] == '1')
+                                      && (line[i][j + 1] == '1'))
                                      {
+                                        horizontalConn[f][R]=' ';
+                                        R++;
                                          j++;
                                       }
 
-                                     else if(line[i][j] == 'L' && j + 1 < line[i].length()
-                                      && line[i][j + 1] == '2')
-                                     {
-                                         j++;
-                                      } 
                                     else
-                                    {                
+                                    {     
+                                     if(R >= ROOMS_PER_FLOOR - 1)
+                                     return false;  
+                                                
                                     horizontalConn[f][R] = line[i][j];
+                                    R++;  
                                     }
 
-                                    R++;
+                                    
                                     }
                              }
 
@@ -465,52 +464,52 @@ bool validateStartingRoom(int startFloor, int startRoom)
 const char* getEntityName(char entitySymbol)
 {
     if(entitySymbol=='<')
-      return "Master Key";
+      return "Master Key (\"<\")";
 
     if(entitySymbol==')')
-      return "Energy Packs";
+      return "Energy Pack (\")\") ";
 
     if(entitySymbol=='\\')
-      return "Emergency Toolkit";
+      return "Emergency Toolkit (\"<\")";
     
     if(entitySymbol=='4')
-      return "Clue Digit 4";
+      return "Clue Digit (\"4\")";
 
     if(entitySymbol=='*')
-      return "Fuse";
+      return "Fuse (\"*\")";
 
     if(entitySymbol=='~')
-      return "Cat";
+      return "Cat (\"~\")";
     
     if(entitySymbol==';')
-      return "Control Panel";
+      return "Control Panel (\";\")";
         
     if(entitySymbol=='(')
-      return "Lift Pass";
+      return "Lift Pass (\"'\")";
     
     if(entitySymbol=='!')
-      return "Passenger";
+      return "Passenger (\"!\")";
     
     if(entitySymbol=='%')
-      return "Medical Kit";
+      return "Medical Kit (\"%\")";
     
     if(entitySymbol=='$')
-      return "Emergency Access Card";
+      return "Emergency Access Card (\"$\")";
 
     if(entitySymbol=='2')
-      return "Clue Digit 2";
+      return "Clue Digit (\"2\")";
     
     if(entitySymbol=='7')
-      return "Clue Digit 7";
+      return "Clue Digit (\"7\")";
 
     if(entitySymbol=='^')
-      return "Cabinet / Train Key";
+      return "Cabinet / Train Key (\"^\")";
 
     if(entitySymbol=='@')
-      return "Cat Carrier";
+      return "Cat Carrier (\"@\")";
 
     if(entitySymbol=='&')
-      return "Observation Token";
+      return "Observation Token (\"&\")";
 
 
 return "Unknown Entity";

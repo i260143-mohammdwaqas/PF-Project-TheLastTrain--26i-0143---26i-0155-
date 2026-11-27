@@ -26,7 +26,7 @@ bool handleInspectCommand(int currentFloor, int currentRoom,
                           bool objectives[NUM_OBJECTIVES], int& score);
 
 bool handleCollectCommand(char itemSymbol, int currentFloor, int currentRoom,
-                          int& energy, int& time, int& score,
+                          int& energy, int& time, int& score,int& emergencyTripsLeft,
                           char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
                           int& entityCount,
                           char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount,
@@ -38,9 +38,7 @@ bool handleUseCommand(char itemSymbol, int currentFloor, int currentRoom,
                       bool objectives[NUM_OBJECTIVES]);
 
 bool handleUnlockCabinetCommand(const char* code, int currentFloor, int currentRoom,
-                                bool objectives[NUM_OBJECTIVES], int& score,
-                                char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
-                                int& entityCount);
+                                bool objectives[NUM_OBJECTIVES], int& score);
 
 bool checkEndConditions(int energy, int time, int &score, bool objectives[NUM_OBJECTIVES]);
 
