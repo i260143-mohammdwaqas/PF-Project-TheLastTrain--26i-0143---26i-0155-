@@ -33,13 +33,57 @@ void renderDashboard(int playerFloor, int playerRoom, int energy, int time, int 
     }
 }
 
-void renderRoomDetails(int floor, int room,
+void renderRoomDetails(int floorNum, int room,
                        const char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
                        int entityCount)
-                       {}
+                       {
+                        
+                        if(floorNum<1 || floorNum>NUM_FLOORS){
+                                cout << "Invalid floor!" <<endl;
+                                return;}
+                           
+                        if(room<1 || room>ROOMS_PER_FLOOR){
+                                cout<<"Invalid room!"  <<endl;
+                                return;}
+                        if(entityCount < 0 || entityCount > MAX_ENTITIES_PER_ROOM){
+                                cout<<"Invalid entity count!"  <<endl;
+                                return;}
+                        cout<<"\nInspecting Floor "<<floorNum<<", Room "<<room<<endl;
+
+                        if(entityCount==0){
+                            cout<<"Nothing here!"<<endl;
+                        }else{
+                            for(int i=0; i<entityCount; i++)
+                              {
+                                 cout<<"- "<<getEntityName(roomEntities[floorNum-1][room-1][i])<<endl;
+                              }}
+                       }
 
 void renderAsciiBuilding(int playerFloor, int playerRoom)
-{}
+{
+                        if(playerFloor<1 || playerFloor>NUM_FLOORS){
+                                cout << "Invalid floor!" <<endl;
+                                return;}
+                           
+                        if(playerRoom<1 || playerRoom>ROOMS_PER_FLOOR){
+                                cout<<"Invalid room!"  <<endl;
+                                return;}
+                        cout<<"\n--- Building Map ---"<<endl;
+                        for (int f = NUM_FLOORS; f >= 1; f--)
+                        {
+                            cout<<"Floor "<<f<<" ";
+                            for(int r=1; r<= ROOMS_PER_FLOOR; r++){
+                                if(f==playerFloor && r==playerRoom){
+                                    cout<<"[ YOU ] ";
+                                }else{
+                                    cout<<"[F"<<f<<"-R"<<r<<"] ";
+                                }
+
+                            }
+                            cout<<endl;
+                        }
+
+}
 
 void renderObjectivesChecklist(const bool objectives[NUM_OBJECTIVES])
 {
