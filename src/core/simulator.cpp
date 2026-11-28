@@ -52,7 +52,7 @@ void runSimulation(int& playerFloor, int& playerRoom,
                         renderObjectivesChecklist(objectives);
 
                         //dislay the building in ascii art, with the player location marked
-                        renderAsciiBuilding(playerFloor, playerRoom);
+                        renderAsciiBuilding(playerFloor, playerRoom, horizontalConn);
 
                          //take input from the user for next command;
                         cout<<"\nEnter command (M=move, I=inspect, C=collect an item, U=use, X=unlock cabinet, S=save, H=help, Q=quit): ";
