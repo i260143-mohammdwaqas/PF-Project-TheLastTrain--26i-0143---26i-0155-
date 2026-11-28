@@ -1,6 +1,7 @@
 # The Last Train
 CS-1002: Programming Fundamentals (AI-C), Semester Project
 Mohammad Waqas (I26-0143), Muhammad Omer Zaheer (I26-0155)
+Release tag: v1.0.0155
 
 ## Folder Structure
 | Folder      | Contents                                                  |
