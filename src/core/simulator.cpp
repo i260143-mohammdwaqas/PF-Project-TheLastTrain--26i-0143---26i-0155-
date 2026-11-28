@@ -77,7 +77,12 @@ void runSimulation(int& playerFloor, int& playerRoom,
                          // handles invlaid inputs
                          if(command!='M' && command!='I' && command!='C' && command!='U' && command!='X' && command!='S' && command!='H' && command!='Q')
                         {
-                            cout<<"Invalid Command!\n"<<endl;
+                            cout<<"\nInvalid Command!\n"<<endl;
+
+                            cout << "Press Enter to continue...";
+                            cin.ignore(1000, '\n');
+                            cin.get();
+
                             continue;
 
 
@@ -191,10 +196,27 @@ void runSimulation(int& playerFloor, int& playerRoom,
                             //handle unlock cabinet coommand
                             case 'X':
                             {
+                            //check if the player is at required location
+                            if(playerFloor!=5 || playerRoom!=1)
+                            {
+                                cout<<"Player must be at Room 1, in 5th floor!"<<endl;
+                                
+                                cout << "\nPress Enter to continue...";
+                                cin.ignore(1000, '\n');
+                                cin.get();
+
+                                break;
+                            }
+
                             //check if the cabinet is alredy unlocked
                             if(objectives[OBJ_CABINET_UNLOCKED])
                             {
                                 cout<<"Cabinet is alredy unlocked!"<<endl;
+
+                                cout << "\nPress Enter to continue...";
+                                cin.ignore(1000, '\n');
+                                cin.get();
+
                                 break;
                             }
 
@@ -203,20 +225,13 @@ void runSimulation(int& playerFloor, int& playerRoom,
                             cout<<"Enter the 3 digit code to unlock the cabinet: ";
                             cin>>code;
 
-
-                            //validate the code
-                            if(code.length()!=3 || code[0]<'0' || code[0]> '9' || code[1]<'0' || code[1]>'9' || code[2]<'0' || code[2]>'9')
-                            {
-                                cout<<"Invalid code! Code must be 3 digits."<<endl;
-                            }
-                            //code is enterd using string,
+      
                             //we pass the the memory of first index of string code in the function
                             
                             //call the function to handle unlock cabinet command
-                           else
-                            {
-                                handleUnlockCabinetCommand(&code[0], playerFloor, playerRoom, objectives, score);                            
-                            }
+                          
+                            handleUnlockCabinetCommand(&code[0], playerFloor, playerRoom, objectives, score);                            
+                          
                             
                             cout << "\nPress Enter to continue...";
                             cin.ignore(1000, '\n');
@@ -634,12 +649,6 @@ bool handleUseCommand(char itemSymbol, int currentFloor, int currentRoom,
                             return false;
                        }
                         
-                        //check if item can be used here
-                        if(itemSymbol!=ENT_FUSE && itemSymbol!=ENT_MEDICAL_KIT && itemSymbol!=ENT_CAT_CARRIER && itemSymbol!=ENT_CABINET_TRAIN_KEY)
-                        {
-                            cout<<"Item cannot be used here!"<<endl;
-                            return false;
-                        }
 
                         //check wether the item exists in the inventory, 
                         bool found=false;
@@ -651,6 +660,13 @@ bool handleUseCommand(char itemSymbol, int currentFloor, int currentRoom,
                                 break;
                             }
 
+                        }
+
+                         //check if item can be used here
+                        if(itemSymbol!=ENT_FUSE && itemSymbol!=ENT_MEDICAL_KIT && itemSymbol!=ENT_CAT_CARRIER && itemSymbol!=ENT_CABINET_TRAIN_KEY)
+                        {
+                            cout<<"Item cannot be used here!"<<endl;
+                            return false;
                         }
 
 
@@ -803,12 +819,7 @@ bool handleUseCommand(char itemSymbol, int currentFloor, int currentRoom,
 bool handleUnlockCabinetCommand(const char* code, int currentFloor, int currentRoom,
                                 bool objectives[NUM_OBJECTIVES], int& score)
                                 {
-                                    //check if the player is at required location
-                                    if(currentFloor!=5 || currentRoom!=1)
-                                    {
-                                        cout<<"Player must be at Room 1, in 5th floor!"<<endl;
-                                        return false;
-                                    }
+                                    
                                      
                                     if(!verifyCabinetCode(code, objectives))
                                     {
